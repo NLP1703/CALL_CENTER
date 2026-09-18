@@ -1,0 +1,7 @@
+# Chaine de generation du questionnaire d'audit des call center (MDS JOB 002/26).
+openpyxl>=3.1,<4        # lecture / ecriture du XLSForm et de la table de correspondance
+requests>=2.31,<3       # client KoboToolbox (kobo.py)
+
+# Facultatif : verifie que le XLSForm compile avant de le deployer sur Kobo.
+#   python -c "from pyxform.xls2xform import convert; convert('questionnaire_audit_call_center.xlsx')"
+pyxform>=2.0
