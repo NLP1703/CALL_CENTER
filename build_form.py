@@ -44,7 +44,6 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
 import criteres_scenario
-import localites
 import traductions
 
 SORTIE = Path(__file__).resolve().parent / "questionnaire_audit_call_center.xlsx"
@@ -70,11 +69,7 @@ COLONNES = (["type", "name"] + col_langues("label") + col_langues("hint")
             + col_langues("media::image"))
 # Colonnes de la feuille choices : `points` porte le bareme du PDF (100 / 50 /
 # 0). Vide = modalite hors score (« Non applicable »).
-# `region` et `departement` rattachent une modalite a celle du niveau au-dessus :
-# c'est ce que lisent les `choice_filter` des listes emboitees (voir page 2).
-COL_CHOIX = ["list_name", "name"] + col_langues("label") + ["points",
-                                                            "region",
-                                                            "departement"]
+COL_CHOIX = ["list_name", "name"] + col_langues("label") + ["points"]
 
 survey = []
 choices = []
@@ -117,13 +112,6 @@ def liste(nom, items):
     for it in items:
         choices.append({"list_name": nom, "name": it[0], "label": it[1],
                         "points": "" if len(it) < 3 or it[2] is None else it[2]})
-
-
-def liste_emboitee(nom, items, colonne):
-    """Liste filtree par le niveau au-dessus : items = (name, label, parent)."""
-    for code, libelle, parent in items:
-        choices.append({"list_name": nom, "name": code, "label": libelle,
-                        "points": "", colonne: parent})
 
 
 def si_num(champ, paires, defaut="0"):
@@ -183,15 +171,6 @@ liste("renvoi", [
     ("3", "Vers un point de vente physique")])
 
 liste("langue", [("fr", "Français"), ("en", "Anglais")])
-
-# REFERENTIEL GEOGRAPHIQUE, repris du fichier des agences MDS (localites.py).
-# Les trois listes sont emboitees : le `choice_filter` de la page 2 ne montre
-# que les departements de la region cochee, puis que les villes de ce
-# departement. La liste est partielle et attend d'etre completee par MDS --
-# voir l'avertissement en tete de localites.py.
-liste("region", localites.REGIONS)
-liste_emboitee("departement", localites.DEPARTEMENTS, "region")
-liste_emboitee("ville", localites.VILLES, "departement")
 
 # Test ou live : les interviews de test sont ecartees a l'analyse, on ne les
 # reconnait plus a posteriori. Consigne MDS reprise du JOB 001/26.
@@ -509,18 +488,6 @@ fin_groupe()
 # =====================================================================
 groupe("grp_identification", "Identification de l'enquêteur")
 q("text", "nom_enqueteur", "Nom enquêteur")
-# OU SE TROUVE L'ENQUETEUR PENDANT L'APPEL -- pas le client joue, pas une
-# agence : le questionnaire n'en visite aucune. Les trois listes s'enchainent,
-# chacune filtree par la precedente, si bien qu'un choix incoherent (une ville
-# hors de son departement) est impossible a cocher.
-q("select_one region", "region", "Région administrative",
-  hint="Là où vous vous trouvez pendant l'appel.")
-q("select_one departement", "departement", "Département",
-  hint="Seuls les départements de la région cochée s'affichent.",
-  choice_filter="region=${region}")
-q("select_one ville", "ville", "Ville",
-  hint="Seules les villes du département coché s'affichent.",
-  choice_filter="departement=${departement}")
 q("select_one reseau", "reseau", "Opérateur", appearance="horizontal-compact")
 q("date", "date_evaluation", "Date",
   constraint=". <= today()",
@@ -968,11 +935,6 @@ NOMS_MDS = {
     "nom_enqueteur": "NOM_ENQ",
     "date_evaluation": "DATE_INTERVIEW",
     "reseau": "OPERATEUR",
-    # Noms des colonnes du fichier des agences MDS, a ceci pres que son en-tete
-    # ecrit « DEPPARTEMENT » : la faute de frappe n'est pas reprise.
-    "region": "REGION_ADMINISTRATIVE",
-    "departement": "DEPARTEMENT",
-    "ville": "VILLE",
     "scenario_joue": "SCENARIO",
     "type_interview": "TYPE_INTERVIEW",
     "heure_debut": "HEURE_DEBUT",
