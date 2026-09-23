@@ -4,12 +4,12 @@
 Source : annexe MDS « Scenarios finaux -- Questionnaire Ghost Check Call »,
 25 scenarios, 106 criteres, 3 a 5 par scenario.
 
-La ou les 22 criteres A->H mesurent le COMPORTEMENT -- les memes pour tous les
+La ou les 23 criteres A->H mesurent le COMPORTEMENT -- les memes pour tous les
 appels --, ceux-ci mesurent les ACTES que le scenario appelait : a-t-il verifie
 l'activation du forfait, consulte l'historique, authentifie le client avant de
 donner le code PUK.
 
-Ils prennent la MEME ECHELLE et entrent dans le MEME SCORE que les 22 autres :
+Ils prennent la MEME ECHELLE et entrent dans le MEME SCORE que les 23 autres :
 build_form.py les declare comme une section notee de plus (section I). Seuls
 ceux du scenario joue s'affichent ; les autres sont masques par leur `relevant`
 et sortent du numerateur comme du denominateur, exactement comme Q15 ou Q18.

@@ -48,7 +48,7 @@ COULEUR_OP = {"Orange": "var(--op-orange)", "MTN": "var(--op-mtn)"}
 
 TRANCHES = {"1": "07h - 12h", "2": "12h - 18h", "3": "18h - 22h"}
 
-# L'echelle des 22 criteres. Elle est ordinale ET porteuse d'un jugement de
+# L'echelle des criteres notes. Elle est ordinale ET porteuse d'un jugement de
 # conformite : la rampe vert / ambre / rouge la dit, le N/A reste neutre parce
 # qu'il ne vaut pas zero -- il sort du calcul.
 NOTES = ["100", "50", "0", "na"]
@@ -77,21 +77,40 @@ def couleur_score(v):
             "var(--st-warn)" if v >= 60 else "var(--st-crit)")
 
 
-# Les cas d'alerte critique, hors score : les cinq cas nommes du questionnaire
-# et les six propres a la section A (accessibilite & serveur vocal, cochables
-# sur ses seuls criteres). Libelles courts : ceux du questionnaire font trois
-# lignes, illisibles en etiquette de graphique.
+# Les cas d'alerte critique, hors score : les cinq cas nommes du questionnaire,
+# les six propres a la section A (accessibilite & serveur vocal) qui les
+# remplacent sur ses criteres, et ceux que le PDF v1.2 ajoute sur la dimension C
+# puis, critere par critere, sur la dimension D. Libelles courts : ceux du
+# questionnaire font trois lignes, illisibles en etiquette de graphique.
 ALERTES = {"confidentialite": "Confidentialité",
            "info_erronee": "Information erronée",
            "irrespect": "Propos irrespectueux",
            "promesse": "Promesse non maîtrisée",
            "abandon": "Abandon non justifié",
+           # --- section A (accessibilite & serveur vocal)
            "accueil_incoherent": "Accueil incohérent",
            "menus_errones": "Menus erronés",
            "langue_indisponible": "Choix de langue",
            "boucle_ivr": "Boucle IVR",
            "coupure_redirection": "Coupure avant mise en relation",
-           "attente_non_signalee": "Attente non signalée"}
+           "attente_non_signalee": "Attente non signalée",
+           # --- dimension C (comprehension du besoin)
+           "interruption": "Interruption du client",
+           "sans_ecoute": "Aucune écoute active",
+           "questions_hors_sujet": "Questions hors sujet",
+           "sans_reformulation": "Aucune reformulation",
+           "besoin_mal_compris": "Besoin mal compris",
+           "demande_ignoree": "Demande ignorée",
+           # --- dimension D (expertise & exactitude), critere par critere
+           "offre_fausse": "Offre mal décrite",
+           "procedure_mal_expliquee": "Procédure mal expliquée",
+           "promesse_irrealiste": "Promesse irréaliste",
+           "reponse_contradictoire": "Réponse contradictoire",
+           "erreur_manifeste": "Erreur sur tarifs / délais",
+           "engagement_trompeur": "Engagement trompeur",
+           "explication_confuse": "Explication confuse",
+           "sans_etapes": "Aucune étape claire",
+           "jargon": "Jargon interne"}
 
 
 # =====================================================================
@@ -149,10 +168,10 @@ def score(soumission, questions):
 
 TOUTES_NOTEES = [n for s in NOTATION.values() for n, _ in s["questions"]]
 
-# Une alerte critique se coche desormais sur le critere note 0 qui la revele ;
-# `alertes`, la question de la page dediee, ne porte plus que les cas etrangers
-# a un 0. Le tableau de bord lit les deux et n'en fait qu'un pour l'appel.
-CHAMPS_ALERTE = ["alertes"] + [f"{n}_alerte" for n in TOUTES_NOTEES]
+# Une alerte critique se coche sur le critere note 0 qui la revele, et la
+# seulement : la page dediee de fin de questionnaire a ete supprimee. Le tableau
+# de bord relit ces champs et n'en fait qu'une liste d'alertes pour l'appel.
+CHAMPS_ALERTE = [f"{n}_alerte" for n in TOUTES_NOTEES]
 
 # Tous les champs d'alerte ne proposent pas la meme liste de cas : la section A
 # a la sienne. La correspondance est relue dans le formulaire plutot que
@@ -168,7 +187,7 @@ for _c in STRUCTURE["choices"]:
 
 
 def cas_possibles(champ):
-    """Les cas d'alerte que ce champ propose reellement, « aucune » exclue."""
+    """Les cas d'alerte que ce champ propose reellement."""
     return CAS_DE_LISTE.get(LISTE_DE_CHAMP.get(champ, ""), [])
 
 
@@ -176,8 +195,7 @@ def alertes_de(soumission):
     """Les cas d'alerte critique de cet appel, d'ou qu'ils aient ete coches.
 
     Dedoublonne : le meme cas signale sur deux criteres reste une alerte pour
-    l'appel. « Aucune alerte critique » n'en est pas une, elle est ecartee comme
-    tout code inconnu.
+    l'appel.
     """
     codes = set()
     for champ in CHAMPS_ALERTE:
@@ -226,17 +244,21 @@ def generer_demo(n=124):
         s["nb_attentes"] = rng.choices([0, 1, 2, 3], weights=[46, 34, 14, 6])[0]
         if s["nb_attentes"]:
             s["duree_attentes"] = max(5, int(rng.lognormvariate(3.4, 0.8)))
-        # Escalade et renvoi : deux appels sur dix environ.
+        # Escalade et renvoi : deux appels sur dix environ. Le renvoi se
+        # repartit entre ses trois destinations ; « 0 » est l'absence de
+        # renvoi, une modalite a part entiere depuis la fusion des deux cases
+        # oui / non -- et non plus un « Non » coche deux fois.
         s["escalade"] = "1" if rng.random() < 0.22 else "2"
-        s["renvoi_canal"] = "1" if rng.random() < 0.16 else "2"
+        s["renvoi"] = rng.choices(["0", "1", "2", "3"],
+                                  weights=[84, 9, 5, 2])[0]
 
         # Criteres masques par leur `relevant` : ils sont simplement absents,
         # comme le serait la reponse dans un export Kobo.
         masques = set()
-        if s["escalade"] != "1" and s["renvoi_canal"] != "1":
+        if s["escalade"] != "1" and s["renvoi"] == "0":
             masques.add("Q15")
         if not (s["nb_attentes"] or s["nb_transferts"]
-                or s["renvoi_canal"] == "1"):
+                or s["renvoi"] != "0"):
             masques.add("Q18")
 
         for q in TOUTES_NOTEES:
@@ -256,21 +278,16 @@ def generer_demo(n=124):
                 s[q] = "0"
         # Le client doit rappeler d'autant plus souvent que l'appel a mal tourne.
         moyen = score(s, TOUTES_NOTEES) or 0
-        s["Q25"] = "1" if rng.random() < max(0.03, 0.85 - moyen / 100) else "2"
-        # Alertes critiques : rares, et cochees la ou elles se revelent -- sur
-        # le critere note 0. Tout 0 n'est pas une alerte, loin de la. Le
-        # reliquat de la page dediee (un cas observe hors d'un critere note 0)
-        # est plus rare encore, mais pas impossible sur un appel bien note :
-        # c'est tout l'interet de suivre les alertes a part.
+        s["Q26"] = "1" if rng.random() < max(0.03, 0.85 - moyen / 100) else "2"
+        # Alertes critiques, cochees la ou elles se revelent -- sur le critere
+        # note 0, seul endroit ou la question se pose. TOUT 0 EN PORTE AU MOINS
+        # UNE : la question est obligatoire et n'offre que des cas.
         for q in TOUTES_NOTEES:
             if s.get(q) != "0":
                 continue
-            vues = [c for c in cas_possibles(f"{q}_alerte")
-                    if rng.random() < 0.03]
-            s[f"{q}_alerte"] = " ".join(vues) if vues else "aucune"
-        autres = [c for c in cas_possibles("alertes")
-                  if rng.random() < 0.002 + 0.006 * (1 - moyen / 100)]
-        s["alertes"] = " ".join(autres) if autres else "aucune"
+            cas = cas_possibles(f"{q}_alerte")
+            vues = [c for c in cas if rng.random() < 0.03]
+            s[f"{q}_alerte"] = " ".join(vues or [rng.choice(cas)])
         lignes.append(s)
     return lignes
 
@@ -385,13 +402,16 @@ def agreger(lignes):
     a["resolution_1er"] = (100 * reponses_q13.count("100") / len(reponses_q13)
                            if reponses_q13 else 0)
     a["n_escalade"] = sum(1 for s in lignes if str(valeur(s, "escalade")) == "1")
+    # Un renvoi, quelle que soit sa destination. Le champ est absent (None) sur
+    # un appel non transfere, ou la question ne s'affiche pas, et vaut « 0 »
+    # quand l'enqueteur a coche « Aucun renvoi » : ni l'un ni l'autre ne compte.
     a["n_renvoi"] = sum(1 for s in lignes
-                        if str(valeur(s, "renvoi_canal")) == "1")
-    a["n_rappel"] = sum(1 for s in lignes if str(valeur(s, "Q25")) == "1")
+                        if str(valeur(s, "renvoi") or "0") != "0")
+    a["n_rappel"] = sum(1 for s in lignes if str(valeur(s, "Q26")) == "1")
 
     # -- alertes critiques. Kobo exporte un select_multiple comme une liste de
-    # codes separes par des espaces ; « aucune » n'est pas une alerte. Les 22
-    # criteres notes et la page dediee sont relus ensemble par alertes_de().
+    # codes separes par des espaces. Les champs d'alerte des criteres notes sont
+    # relus ensemble par alertes_de().
     a["alertes"] = Counter()
     a["n_appels_alerte"] = 0
     for s in lignes:
@@ -978,7 +998,7 @@ def rendre(a, demo, uid):
             f'{a["n_appels_alerte"]} call(s) out of {a["total"]} carry at least '
             f'one alert · they do not enter the score'),
         t_notes=sp("Répartition des notes", "h2"),
-        s_notes=sp("Toutes réponses des 22 critères scorés, N/A compris",
+        s_notes=sp("Toutes réponses des critères scorés, N/A compris",
                    'p class="sous"'),
         d_notes=sp("Afficher le détail par section", "summary"),
         t_tranche=sp("Appels par tranche horaire", "h2"),

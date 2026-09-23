@@ -7,8 +7,16 @@ tant que toutes les questions obligatoires visibles de l'etape courante ne sont
 pas renseignees. Les questions conditionnelles apparaissent comme dans
 KoboCollect et le brouillon est conserve dans le navigateur de l'enqueteur.
 
+UNE ETAPE MAL REMPLIE SE DIT AU CHANGEMENT DE PAGE. Le controle ne porte pas
+seulement sur ce qui manque : les `constraint` du formulaire -- date dans le
+futur, duree hors bornes, heure de fin anterieure a l'heure de debut -- sont
+rejouees ici. La faute est surlignee des la saisie, puis nommee et bloquante au
+moment de passer a l'etape suivante, au lieu d'etre decouverte a la fin, quand
+tout est a relire.
+
 Specifique au call center : la page **rejoue le bareme** du questionnaire. Le
-score de chaque section et le score total sont recalcules a chaque reponse,
+score de chaque section et le score total sont recalcules a chaque reponse
+sans jamais etre montres a l'enqueteur,
 exactement comme le formulaire Kobo les calcule -- l'enqueteur voit sa note
 avant meme de saisir dans KoboCollect.
 
@@ -200,8 +208,7 @@ def code(nom):
 
 # Noms lisibles pour les champs sans code Qxx, utilises dans les etiquettes
 # "Posee si ...".
-ALIAS = {"escalade": "Escalade", "renvoi_canal": "Renvoi / autre canal",
-         "renvoi_agence": "Renvoi en agence",
+ALIAS = {"escalade": "Escalade", "renvoi": "Renvoi",
          "nb_attentes": "Mises en attente", "nb_transferts": "Transferts",
          "scenario_joue": "Scénario"}
 
@@ -245,17 +252,18 @@ def conditions(expr):
 
 
 # Conditions trop longues ou trop techniques a enumerer : libelle ecrit a la
-# main. « alertes != '' et alertes != Aucune » se lit mal ; la condition reelle
-# est simplement qu'une alerte ait ete cochee.
+# main.
 LIBELLE_SPECIAL = {
-    "alertes_com": "Posée dès que les alertes critiques sont renseignées",
+    # Le renvoi enumere ses trois destinations : les lister dans le tag
+    # donnerait une phrase de deux lignes la ou une seule dit la meme chose.
+    "renvoi_precision": "Posée si un renvoi a été indiqué",
+    "Q15": "Posée en cas d'escalade ou de renvoi",
 }
 # Un `required` porteur d'une expression : la question est facultative tant que
 # la condition n'est pas remplie. Le libelle du tag s'ecrit a la main, comme
-# celui des conditions d'affichage.
-LIBELLE_OBLIGATION = {
-    "alertes_com": "Obligatoire si une alerte est cochée",
-}
+# celui des conditions d'affichage. Aucune question du questionnaire n'en porte
+# plus ; la mecanique reste, elle ne coute rien et resservira.
+LIBELLE_OBLIGATION = {}
 # Les 25 blocs de la section I portent deja le libelle du scenario en titre :
 # « Posee si Scenario = S07 · Digital · Application operateur inaccessible »
 # le repeterait mot pour mot. Une phrase suffit.
@@ -314,6 +322,45 @@ def attr_obligation(req, nom):
         nom, "Obligatoire sous condition")
 
 
+# Une reponse peut etre PRESENTE ET FAUSSE : le formulaire Kobo pose des
+# `constraint` -- date dans le futur, duree hors bornes, heure de fin anterieure
+# a l'heure de debut. La page les rejoue pour signaler la faute des la saisie
+# puis au changement d'etape, et non au moment du report dans KoboCollect.
+#
+# Trois formes couvrent tout le questionnaire ; une quatrieme qui apparaitrait
+# est SIGNALEE A LA GENERATION plutot que silencieusement ignoree -- sans quoi
+# la page laisserait passer ce que Kobo refusera.
+RE_BORNES = re.compile(r"^\.\s*>=\s*(-?\d+)\s+and\s+\.\s*<=\s*(-?\d+)$")
+RE_APRES = re.compile(r"^decimal-time\(\.\)\s*>\s*decimal-time\(\$\{(\w+)\}\)$")
+CONTRAINTES_INCONNUES = []
+
+
+def attr_contrainte(ligne):
+    """(attribut data-ctr, paragraphe du message, specification lue).
+
+    La specification sert deux fois : au navigateur, qui rejoue la contrainte,
+    et au rendu du champ, qui en tire les bornes de la saisie.
+    """
+    expr = " ".join((ligne.get("constraint") or "").split())
+    if not expr:
+        return "", "", None
+    bornes, apres = RE_BORNES.match(expr), RE_APRES.match(expr)
+    if expr == ". <= today()":
+        spec = {"t": "pas_futur"}
+    elif bornes:
+        spec = {"t": "borne", "min": int(bornes.group(1)),
+                "max": int(bornes.group(2))}
+    elif apres:
+        spec = {"t": "apres", "champ": apres.group(1)}
+    else:
+        CONTRAINTES_INCONNUES.append((ligne["name"], expr))
+        return "", "", None
+    msg = ligne.get("constraint_message") or "Réponse invalide."
+    data = html.escape(json.dumps(spec, ensure_ascii=False), quote=True)
+    return (f' data-ctr="{data}"',
+            f'<p class="q-invalide-txt"{bi(msg, txt)}>{txt(msg)}</p>', spec)
+
+
 # ---------------------------------------------------------------------
 # Decoupage en etapes : un groupe de premier niveau = une etape
 # ---------------------------------------------------------------------
@@ -359,6 +406,7 @@ def rendre_question(ligne):
 
     nom = html.escape(ligne["name"])
     attr_req, tag_cond = attr_condition(ligne)
+    attr_ctr, p_invalide, spec_ctr = attr_contrainte(ligne)
     auto = ligne.get("readonly") == "yes"
     req = "" if auto else ligne.get("required", "")
     attr_obl_si, tag_obl = attr_obligation(req, ligne["name"])
@@ -367,7 +415,7 @@ def rendre_question(ligne):
     attr_auto = ' data-auto="1"' if auto else ""
 
     o = [f'<article class="q" id="q-{nom}" data-name="{nom}"'
-         f'{attr_req}{attr_obl}{attr_auto}>']
+         f'{attr_req}{attr_obl}{attr_auto}{attr_ctr}>']
     c = code(ligne["name"])
     o.append('<div class="q-gutter">'
              + (f'<span class="q-code">{html.escape(c)}</span>' if c else "")
@@ -437,10 +485,12 @@ def rendre_question(ligne):
                      f'data-ph-en="{html.escape(T("Votre réponse…"), quote=True)}" '
                      f'placeholder="Votre réponse…"></textarea>')
         else:
+            # Les bornes du champ sont celles de la contrainte, relues une seule
+            # fois : le navigateur borne la saisie, et contrainteTenue() dit la
+            # meme chose quand elle est contournee au clavier ou au collage.
             sup = ""
-            if t == "integer" and ligne.get("constraint"):
-                m = re.findall(r"\.<=\s*(\d+)", ligne["constraint"])
-                sup = f' max="{m[0]}" min="0"' if m else ""
+            if t == "integer" and spec_ctr and spec_ctr["t"] == "borne":
+                sup = f' min="{spec_ctr["min"]}" max="{spec_ctr["max"]}"'
             o.append(f'<input class="saisie saisie-courte" type="{mode}"{sup} '
                      f'aria-labelledby="lab-{nom}">')
     elif t in INFOS:
@@ -448,6 +498,7 @@ def rendre_question(ligne):
 
     manque = "Cette réponse est obligatoire pour continuer."
     o.append(f'<p class="q-manque-txt"{bi(manque, txt)}>{txt(manque)}</p>')
+    o.append(p_invalide)
     o.append("</div></article>")
     return "".join(o)
 
@@ -486,12 +537,18 @@ INTRO_FR = """
     <li><strong>Une &eacute;tape &agrave; la fois.</strong> Le bouton <em>Suivant</em> ne s'active
         qu'une fois toutes les questions obligatoires de l'&eacute;tape renseign&eacute;es, exactement
         comme dans KoboCollect.</li>
+    <li><strong>Une erreur se signale tout de suite.</strong> Une r&eacute;ponse
+        impossible &mdash; date &agrave; venir, dur&eacute;e hors bornes, heure de fin
+        ant&eacute;rieure &agrave; l'heure de d&eacute;but &mdash; est
+        <strong>surlign&eacute;e d&egrave;s la saisie</strong> et vous retient
+        &agrave; l'&eacute;tape tant qu'elle n'est pas corrig&eacute;e. Rien n'attend la
+        fin du questionnaire.</li>
     <li><strong>Cliquez directement sur les modalit&eacute;s</strong> pour r&eacute;pondre ; un second
         clic annule le choix.</li>
     <li><strong>Vous ne notez pas, vous qualifiez.</strong> Quatre r&eacute;ponses partout :
-        totalement conforme, partiellement conforme, non conforme, non applicable. Aucun
-        chiffre ne s'affiche pendant la saisie : la page convertit en arri&egrave;re-plan et
-        <strong>n'affiche le score de l'appel qu'&agrave; la derni&egrave;re &eacute;tape</strong>.
+        totalement conforme, partiellement conforme, non conforme, non applicable.
+        <strong>Aucun score ne s'affiche</strong> : ni pendant la saisie, ni &agrave; la fin.
+        Le calcul se fait en arri&egrave;re-plan et ne se lit que dans la base MDS.
         Un <em>non applicable</em> <strong>sort du calcul</strong> au lieu de compter z&eacute;ro.</li>
     <li><strong>Un <em>non conforme</em> ouvre un commentaire obligatoire.</strong> Il
         n'appara&icirc;t que l&agrave; : c'est une situation exceptionnelle ou une alerte
@@ -541,13 +598,18 @@ INTRO_EN = """
     <li><strong>One step at a time.</strong> The <em>Next</em> button only becomes
         active once every required question on the step has been answered, exactly
         as in KoboCollect.</li>
+    <li><strong>A mistake is flagged straight away.</strong> An impossible answer
+        &mdash; a date still to come, a length outside its bounds, a finish time
+        earlier than the start time &mdash; is <strong>highlighted as you type</strong>
+        and keeps you on the step until it is corrected. Nothing waits for the end of
+        the questionnaire.</li>
     <li><strong>Click straight on the answer options</strong> to answer; a second
         click cancels the choice.</li>
     <li><strong>You are not marking, you are qualifying.</strong> Four answers
         everywhere: fully compliant, partially compliant, not compliant, not applicable.
-        No figure is shown while you fill the form in: the page works it out in the
-        background and <strong>only shows the score for the call on the last
-        step</strong>. A <em>not applicable</em> <strong>drops out of the
+        <strong>No score is ever shown</strong>: neither while you fill the form in nor
+        at the end. It is worked out in the background and can only be read in the MDS
+        database. A <em>not applicable</em> <strong>drops out of the
         calculation</strong> instead of counting as zero.</li>
     <li><strong>A <em>not compliant</em> opens a mandatory comment.</strong> It appears
         nowhere else: it is an exceptional situation or a critical alert, and must be
@@ -664,6 +726,7 @@ CSS = """
 .rail a.on { border-left-color:var(--mds-amber); color:var(--ink); font-weight:600;
              background:var(--accent-soft); }
 .rail a.fini .idx-n { color:var(--st-good); }
+.rail a.ko .idx-n { color:var(--st-crit); }
 .rail a.verrou { opacity:.45; cursor:not-allowed; }
 .rail a.verrou:hover { background:none; color:var(--ink-2); }
 .idx-n0 { font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600;
@@ -671,6 +734,9 @@ CSS = """
           padding:1px 5px; }
 .rail a.on .idx-n0, .rail a.fini .idx-n0 { background:var(--accent);
                                            color:var(--accent-ink); }
+/* Une etape mal remplie se signale dans le sommaire, courante ou non : la
+   regle passe apres celle de l'etape courante, a specificite egale. */
+.rail a.ko .idx-n0 { background:var(--st-crit); color:#fff; }
 .idx-n { font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted);
          font-variant-numeric:tabular-nums; white-space:nowrap; }
 .idx-n b { color:var(--accent); }
@@ -727,6 +793,14 @@ CSS = """
 .q-manque-txt { display:none; margin:9px 0 0; font-size:12px; font-weight:600;
                 color:var(--st-crit); }
 .q.manque .q-manque-txt { display:block; }
+/* Reponse presente mais fausse : meme severite qu'une reponse absente. */
+.q.invalide { background:var(--amber-soft); border-radius:3px;
+              box-shadow:inset 3px 0 0 var(--st-crit); padding-left:11px;
+              margin-left:-11px; }
+.q.invalide .q-etat { background:var(--st-crit); }
+.q-invalide-txt { display:none; margin:9px 0 0; font-size:12px; font-weight:600;
+                  color:var(--st-crit); }
+.q.invalide .q-invalide-txt { display:block; }
 .q-label { margin:0 0 8px; font-size:14.5px; font-weight:500; line-height:1.5; max-width:68ch; }
 .q-meta { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:9px; }
 .tag { font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:500;
@@ -909,17 +983,81 @@ function manquantes(sec) {
     && estVide(R[q.dataset.name]));
 }
 
+// « HH:MM » en minutes : la contrainte d'heure du formulaire compare deux
+// decimal-time(), ce qui revient au meme sur une saisie <input type="time">.
+function enMinutes(v) {
+  const m = /^(\\d{1,2}):(\\d{2})/.exec(v || '');
+  return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
+}
+
+// La `constraint` du formulaire, rejouee. Une reponse vide n'est jamais fausse
+// -- c'est l'affaire de manquantes() -- et une contrainte qu'on ne saurait pas
+// evaluer ne bloque personne : elle n'aurait pas ete emise (voir
+// CONTRAINTES_INCONNUES, signalees a la generation).
+function contrainteTenue(q) {
+  const brut = q.dataset.ctr;
+  if (!brut) return true;
+  const v = R[q.dataset.name];
+  if (estVide(v)) return true;
+  const c = JSON.parse(brut);
+  if (c.t === 'borne') {
+    const n = Number(v);
+    return !Number.isFinite(n) || (n >= c.min && n <= c.max);
+  }
+  if (c.t === 'pas_futur') {
+    const d = new Date(v + 'T00:00'), j = new Date();
+    j.setHours(0, 0, 0, 0);
+    return isNaN(d.getTime()) || d <= j;
+  }
+  if (c.t === 'apres') {
+    const a = enMinutes(R[c.champ]), b = enMinutes(v);
+    return isNaN(a) || isNaN(b) || b > a;
+  }
+  return true;
+}
+
+function invalides(sec) {
+  return [...sec.querySelectorAll('.q[data-name][data-ctr]')].filter(q =>
+    !q.hidden && !q.closest('.sous[hidden]') && !contrainteTenue(q));
+}
+
+// Ce qui empeche de quitter l'etape, dans l'ordre de la page : ce qui manque et
+// ce qui est faux, surlignes ensemble. Retourne le nombre de problemes.
+// `avertir` distingue le depart bloque -- on le dit -- du simple retour en
+// arriere, ou l'on se contente de marquer l'etape quittee.
+function signalerEtape(sec, avertir) {
+  const vides = manquantes(sec), faux = invalides(sec);
+  vides.forEach(q => q.classList.add('manque'));
+  faux.forEach(q => q.classList.add('invalide'));
+  const tous = vides.concat(faux);
+  if (!tous.length) return 0;
+  if (avertir !== false) {
+    tous.sort((a, b) => (a.compareDocumentPosition(b) &
+                         Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+    tous[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast(faux.length
+      ? (faux.length > 1 ? t('corriger_n', faux.length) : t('corriger_1'))
+      : t('manque', vides.length));
+  }
+  return tous.length;
+}
+
 function majEtat() {
   majVisibilite();
   majFiltres();
 
   let vus = 0, faits = 0;
   ETAPES.forEach(sec => {
-    let sv = 0, sf = 0;
+    let sv = 0, sf = 0, sx = 0;
     sec.querySelectorAll('.q[data-name]').forEach(q => {
       if (q.dataset.auto) return;            // champ deduit : rien a saisir
       const cache = q.hidden || q.closest('.sous[hidden]');
-      const ok = !estVide(R[q.dataset.name]);
+      // Le surlignage d'une reponse fausse ne se merite pas : il apparait des
+      // la saisie, sans attendre le changement de page.
+      const juste = contrainteTenue(q);
+      q.classList.toggle('invalide', !cache && !juste);
+      if (!cache && !juste) sx++;      // une question masquee ne gene personne
+      const ok = !estVide(R[q.dataset.name]) && juste;
       q.classList.toggle('ok', ok);
       if (ok) q.classList.remove('manque');
       if (cache) return;
@@ -933,6 +1071,7 @@ function majEtat() {
     if (a) {
       a.querySelector('.idx-n').innerHTML = '<b>' + sf + '</b>/' + sv;
       a.classList.toggle('fini', sv > 0 && sf === sv);
+      a.classList.toggle('ko', sx > 0);
     }
     vus += sv; faits += sf;
   });
@@ -943,13 +1082,15 @@ function majEtat() {
     (vus ? (100 * faits / vus) : 0) + '%';
 
   const restant = manquantes(ETAPES[etape]).length;
+  const faux = invalides(ETAPES[etape]).length;
   const suiv = document.getElementById('suivant');
-  suiv.classList.toggle('en-attente', restant > 0);
+  suiv.classList.toggle('en-attente', restant + faux > 0);
   suiv.textContent = etape === DERNIERE ? t('terminer') :
     (etape === DERNIERE - 1 ? t('voir_recap') : t('suivant'));
-  document.getElementById('nav-alerte').textContent = restant
-    ? (restant > 1 ? t('reste_n', restant) : t('reste_1'))
-    : '';
+  const dits = [];
+  if (restant) dits.push(restant > 1 ? t('reste_n', restant) : t('reste_1'));
+  if (faux) dits.push(faux > 1 ? t('corriger_n', faux) : t('corriger_1'));
+  document.getElementById('nav-alerte').textContent = dits.join(' · ');
   majCalculs();
   majRecap();
 }
@@ -1137,28 +1278,35 @@ document.addEventListener('input', ev => {
 });
 
 // --- navigation verrouillee
+// Une etape incomplete OU mal remplie ne se quitte pas vers l'avant : le
+// probleme est surligne et nomme ici, au moment ou l'enqueteur change de page,
+// et non a la fin du questionnaire quand tout est a relire.
 document.getElementById('suivant').addEventListener('click', () => {
-  const m = manquantes(ETAPES[etape]);
-  if (m.length) {
-    m.forEach(q => q.classList.add('manque'));
-    m[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    toast(t('manque', m.length));
-    return;
-  }
+  if (signalerEtape(ETAPES[etape], true)) return;
   if (etape === DERNIERE) { toast(t('complet')); return; }
   afficherEtape(etape + 1);
 });
 
+// Revenir en arriere reste toujours possible -- c'est souvent ce qu'il faut
+// faire pour corriger --, mais l'etape quittee part surlignee et marquee dans
+// le sommaire : on la retrouve sans l'avoir cherchee.
 document.getElementById('precedent').addEventListener('click', () => {
+  signalerEtape(ETAPES[etape], false);
   afficherEtape(etape - 1);
 });
 
 document.querySelectorAll('.rail a').forEach(a => a.addEventListener('click', ev => {
   ev.preventDefault();
   const n = Number(a.dataset.etape);
+  if (n === etape) return;
   if (n > maxEtape) {
     toast(t('verrou'));
     return;
+  }
+  if (n > etape) {
+    if (signalerEtape(ETAPES[etape], true)) return;
+  } else {
+    signalerEtape(ETAPES[etape], false);
   }
   afficherEtape(n);
 }));
@@ -1168,7 +1316,8 @@ document.getElementById('raz').addEventListener('click', () => {
   R = {}; maxEtape = 0;
   document.querySelectorAll('.choix').forEach(b => b.setAttribute('aria-pressed', 'false'));
   document.querySelectorAll('.saisie').forEach(s => { s.value = ''; });
-  document.querySelectorAll('.q.manque').forEach(q => q.classList.remove('manque'));
+  document.querySelectorAll('.q.manque, .q.invalide').forEach(q =>
+    q.classList.remove('manque', 'invalide'));
   afficherEtape(0); toast(t('efface'));
 });
 
@@ -1259,8 +1408,9 @@ PIED_FR = """
       <p><strong>Périmètre de cette version.</strong> Toutes les sections du questionnaire
       papier de septembre 2026 sont couvertes : A à H, puis la synthèse qualitative. Le
 score de chaque section et le score total sont <strong>calculés en arrière-plan</strong>
-      avec le barème du PDF : aucun chiffre n'est montré pendant la saisie, seul le
-      <strong>score de l'appel</strong> s'affiche à la dernière étape. Un critère
+      avec le barème du PDF : <strong>aucun chiffre n'est montré à l'enquêteur</strong>,
+      ni pendant la saisie ni à la dernière étape. Les scores partent avec la soumission
+      et se lisent dans la base MDS. Un critère
       <em>non applicable</em>, ou masqué parce que la situation ne s'est pas produite,
       sort du calcul au lieu de compter zéro.</p>
       <p>Les <strong>données factuelles</strong> — attente, durée, mises en attente,
@@ -1277,8 +1427,9 @@ PIED_EN = """
       <p><strong>Scope of this version.</strong> Every section of the September 2026 paper
       questionnaire is covered: A to H, then the qualitative summary. The score for each
       section and the total score are <strong>calculated in the background</strong> using
-      the scale in the PDF: no figure is shown while the form is filled in, and only the
-      <strong>score for the call</strong> appears on the last step. A criterion marked
+      the scale in the PDF: <strong>no figure is ever shown to the auditor</strong>,
+      neither while the form is filled in nor on the last step. The scores travel with
+      the submission and are read in the MDS database. A criterion marked
       <em>not applicable</em>, or hidden because the situation did not arise, drops out of
       the calculation instead of counting as zero.</p>
       <p>The <strong>factual data</strong> — waiting time, length, holds, transfers,
@@ -1343,6 +1494,13 @@ PAGE = (
 <div class="toast" id="toast" role="status"></div>
 <script>""" + JS_TABLES + JS + """</script>
 """)
+
+if CONTRAINTES_INCONNUES:
+    print(f"  ATTENTION : {len(CONTRAINTES_INCONNUES)} contrainte(s) du "
+          f"formulaire ne sont pas rejouées dans la page — la saisie ne les "
+          f"signalera pas :")
+    for _nom, _expr in CONTRAINTES_INCONNUES:
+        print(f"    - {_nom} : {_expr}")
 
 SORTIE.write_text(PAGE, encoding="utf-8")
 print(f"OK : {SORTIE.name} ({TOTAL} questions, {N_RECAP + 1} étapes, "

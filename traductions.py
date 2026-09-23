@@ -30,115 +30,66 @@ FR_EN = {
     # =================================================================
     "Consignes générales pour l'enquêteur":
         'General instructions for the auditor',
-    "**LISEZ CES CONSIGNES AVANT DE COMMENCER L'ÉVALUATION.**":
-        '**READ THESE INSTRUCTIONS BEFORE STARTING THE ASSESSMENT.**',
+    "**À LIRE AVANT DE COMMENCER.**":
+        '**READ THIS BEFORE YOU START.**',
 
-    "**1. PRINCIPES D'UTILISATION**\n\n"
+    "**1. COMMENT REMPLIR**\n\n"
     "• **Un seul scénario par appel.** Le questionnaire est renseigné "
     "immédiatement après avoir raccroché.\n"
-    "• Les données factuelles (**temps d'attente, durée, transferts, mises en "
-    "attente**) sont collectées séparément du score comportemental.\n"
-    "• Pour les critères évalués, quatre réponses : **totalement conforme**, "
-    "**partiellement conforme / perfectible**, **non conforme**, **non "
-    "applicable**. Le formulaire les convertit lui-même en score : vous n'avez "
-    "aucun chiffre à manipuler.\n"
-    "• Les **questions conditionnelles** ne sont renseignées que lorsque la "
-    "situation se produit (**mise en attente, escalade, renvoi en agence, "
-    "etc.**).\n"
-    "• **Tout « non conforme »** ou **toute situation exceptionnelle** doit "
-    "être étayé par un fait observé ou une formulation exacte du "
-    "conseiller.\n"
-    "• **Le score final** mesure la performance de l'expérience par opérateur "
-    "et par scénario ; il ne doit pas être utilisé isolément comme mesure de "
-    "performance individuelle d'un conseiller.\n"
-    "• Cible de complétion post-appel : **médiane ≤ 5 minutes** après "
-    "calibrage et paramétrage de la logique conditionnelle.":
-        "**1. PRINCIPLES OF USE**\n\n"
+    "• Commencez par la page **« Mesures »** : le formulaire ouvre ensuite les "
+    "seules questions qui concernent cet appel. **Une question qui ne "
+    "s'affiche pas n'est pas à renseigner.**\n"
+    "• Chaque critère a quatre réponses : **totalement conforme**, "
+    "**partiellement conforme**, **non conforme**, **non applicable**.\n"
+    "• Un **non conforme** ouvre deux champs : le **cas d'alerte critique** "
+    "que le constat révèle, puis le **commentaire obligatoire**. Qualifiez "
+    "d'abord, décrivez ensuite.\n"
+    "• Vous n'avez **rien à calculer** : vous décrivez ce que vous avez "
+    "entendu.\n"
+    "• Ne **révélez jamais** que vous êtes enquêteur.":
+        '**1. HOW TO FILL IT IN**\n\n'
         '• **One scenario per call only.** The questionnaire is filled in '
         'immediately after hanging up.\n'
-        '• The factual data (**waiting time, length, transfers, holds**) are '
-        'collected separately from the behavioural score.\n'
-        '• For the criteria being assessed, four answers: **fully compliant**, '
-        '**partially compliant / could be improved**, **not compliant**, **not '
-        'applicable**. The form turns them into a score itself: you have no '
-        'figure to handle.\n'
-        '• **Conditional questions** are only filled in when the situation '
-        'arises (**hold, escalation, referral to a branch, etc.**).\n'
-        '• **Every “not compliant”**, and **every exceptional situation**, must '
-        "be backed up by an observed fact or the adviser's exact wording.\n"
-        '• **The final score** measures the performance of the experience by '
-        'operator and by scenario; it must not be used on its own as a measure '
-        "of an individual adviser's performance.\n"
-        '• Target post-call completion time: **median ≤ 5 minutes**, once the '
-        'conditional logic has been calibrated and set up.',
+        '• Start with the **“Measurements”** page: the form then opens only '
+        'the questions that concern this call. **A question that does not '
+        'appear is not to be filled in.**\n'
+        '• Each criterion has four answers: **fully compliant**, **partially '
+        'compliant**, **not compliant**, **not applicable**.\n'
+        '• A **not compliant** opens two fields: the **critical alert case** '
+        'the finding reveals, then the **mandatory comment**. Qualify first, '
+        'describe afterwards.\n'
+        '• You have **nothing to work out**: you describe what you heard.\n'
+        '• **Never reveal** that you are an auditor.',
 
-    "**2. REPÈRES POUR LE CALIBRAGE**\n\n"
-    "• La notation doit porter sur ce qui a **effectivement été observé et "
-    "entendu** pendant l'appel, pas sur ce que l'enquêteur pense que le "
-    "conseiller aurait dû faire en dehors du scénario.\n"
-    "• Un critère n'est **non applicable** que s'il n'a réellement pas pu être "
-    "observé ou ne s'appliquait pas au parcours.\n"
-    "• **Partiellement conforme** doit décrire une conformité partielle "
-    "**concrète** : "
-    "réponse correcte mais incomplète, personnalisation mécanique, explication "
-    "partiellement claire, ownership partiel, etc.\n"
-    "• Le **FCR** ne signifie pas nécessairement que toute opération "
-    "back-office soit achevée pendant l'appel : il mesure si le client "
-    "obtient, dès ce contact, la résolution accessible ou une prise en charge "
-    "complète et fiable ne nécessitant pas un nouvel effort évitable.\n"
-    "• Les **verbatims exacts** sont à privilégier uniquement lorsqu'ils "
-    "illustrent un point exceptionnel, un irritant majeur ou une alerte "
-    "critique.":
-        '**2. CALIBRATION GUIDANCE**\n\n'
-        '• Scoring must cover what was **actually observed and heard** during '
-        'the call, not what the auditor thinks the adviser should have done '
-        'outside the scenario.\n'
-        '• A criterion is **not applicable** only if it genuinely could not be '
-        'observed or did not apply to the journey.\n'
-        '• **Partially compliant** must describe **concrete** partial '
-        'compliance: a '
-        'correct but incomplete answer, mechanical personalisation, a '
-        'partially clear explanation, partial ownership, and so on.\n'
-        '• **FCR** does not necessarily mean that every back-office operation '
-        'is completed during the call: it measures whether the customer '
-        'obtains, from this contact onwards, the resolution available or a '
-        'complete and reliable handling that does not require further '
-        'avoidable effort.\n'
-        '• **Exact verbatims** are to be favoured only when they illustrate an '
-        'exceptional point, a major irritant or a critical alert.',
-
-    "**3. DANS CE FORMULAIRE**\n\n"
-    "• Les questions non applicables sont **masquées automatiquement** : "
-    "renseignez d'abord les « Mesures », le formulaire ouvre ensuite ce qui "
-    "s'applique à cet appel. Une question masquée sort du calcul du score.\n"
-    "• Un **non applicable** sort du calcul lui aussi : il ne vaut pas « non "
-    "conforme ».\n"
-    "• Un **non conforme** ouvre **deux champs** : l'**alerte critique** "
-    "éventuelle, puis le **commentaire obligatoire**. Qualifiez avant de "
-    "décrire ; si le constat n'est pas une alerte, cochez « Aucune alerte "
-    "critique ».\n"
-    "• Les **alertes critiques** n'entrent pas dans le score. La page qui leur "
-    "est consacrée ne recueille que celles qu'aucun critère non conforme ne "
-    "porte.\n"
-    "• **Aucune note ne s'affiche pendant la saisie** : le formulaire calcule "
-    "tout en arrière-plan et n'affiche le **score de l'appel** qu'à la dernière "
-    "page. Vous décrivez ce que vous avez entendu, vous n'additionnez rien.":
-        '**3. IN THIS FORM**\n\n'
-        '• Questions that do not apply are **hidden automatically**: fill in '
-        'the “Measurements” page first, and the form then opens whatever applies to '
-        'this call. A hidden question drops out of the score.\n'
-        '• A **not applicable** drops out of the calculation too: it does not '
-        'count as “not compliant”.\n'
-        '• A **not compliant** opens **two fields**: the **critical alert**, if '
-        'any, then the **mandatory comment**. Qualify before describing; if '
-        'the finding is not an alert, tick “No critical alert”.\n'
-        '• **Critical alerts** do not enter the score. The page devoted to '
-        'them only collects those that no criterion marked not compliant '
-        'carries.\n'
-        '• **No mark is shown while you fill the form in**: the form works '
-        'everything out in the background and only shows the **score for the '
-        'call** on the last page. You describe what you heard; you add nothing '
-        'up.',
+    "**2. COMMENT QUALIFIER**\n\n"
+    "• Notez ce que vous avez **réellement observé et entendu** pendant "
+    "l'appel, pas ce que le conseiller aurait pu faire en dehors du "
+    "scénario.\n"
+    "• **Non applicable** : seulement si le critère n'a pas pu être observé "
+    "ou ne s'appliquait pas à cet appel. Ce n'est pas un « non conforme ».\n"
+    "• **Partiellement conforme** : une conformité réelle mais incomplète — "
+    "réponse correcte mais partielle, personnalisation mécanique, explication "
+    "à moitié claire, prise en charge partielle.\n"
+    "• **Non conforme** : toujours étayé par un **fait observé** ou la "
+    "**formulation exacte** du conseiller, jamais par une appréciation "
+    "générale.\n"
+    "• **FCR** : le client obtient dès cet appel la résolution ou une prise "
+    "en charge complète et fiable, sans nouvel effort à fournir — même si une "
+    "opération reste à finir en back-office.":
+        '**2. HOW TO QUALIFY**\n\n'
+        '• Score what you **actually observed and heard** during the call, '
+        'not what the adviser could have done outside the scenario.\n'
+        '• **Not applicable**: only if the criterion could not be observed or '
+        'did not apply to this call. It is not a “not compliant”.\n'
+        '• **Partially compliant**: genuine but incomplete compliance — a '
+        'correct but partial answer, mechanical personalisation, a half-clear '
+        'explanation, partial handling.\n'
+        '• **Not compliant**: always backed up by an **observed fact** or the '
+        "adviser's **exact wording**, never by a general impression.\n"
+        '• **FCR**: the customer obtains, from this call onwards, the '
+        'resolution or complete and reliable handling, with no further effort '
+        'to make — even if an operation remains to be finished in the back '
+        'office.',
 
     "Type d'interview": 'Type of interview',
     "TEST tant que la collecte n'est pas ouverte ; Live pour un appel réel":
@@ -234,18 +185,17 @@ FR_EN = {
         '0 if the call was never transferred',
     'Indiquez un nombre compris entre 0 et 10.':
         'Enter a number between 0 and 10.',
-    'Renvoi vers un autre canal (application, USSD, site, réseaux sociaux)':
-        'Referral to another channel (app, USSD, website, social media)',
-    "Le conseiller a-t-il invité le client à poursuivre sur un canal "
-    "numérique plutôt qu'au téléphone ?":
-        'Did the adviser invite the customer to carry on through a digital '
-        'channel rather than by phone?',
-    'Renvoi en agence ou point de vente physique':
-        'Referral to a branch or physical outlet',
-    "Le conseiller a-t-il invité le client à se déplacer ?":
-        'Did the adviser invite the customer to travel there in person?',
-    "Préciser le canal ou l'agence indiqués":
-        'Specify the channel or branch given',
+    "Renvoi : le conseiller a-t-il orienté le client ailleurs qu'au téléphone ?":
+        'Referral: did the adviser direct the customer somewhere other than '
+        'the phone?',
+    "Une seule destination : celle vers laquelle le client a été orienté. "
+    "« Aucun renvoi » si le conseiller n'a invité le client ni à poursuivre "
+    "sur un canal numérique ni à se déplacer.":
+        'A single destination: the one the customer was directed to. '
+        '"No referral" if the adviser invited the customer neither to carry on '
+        'through a digital channel nor to travel there in person.',
+    "Préciser le canal, l'agence ou le point de vente indiqués":
+        'Specify the channel, branch or outlet given',
     'Escalade : le dossier a-t-il été transmis à un autre service ou un rappel '
     'a-t-il été promis ?':
         'Escalation: was the case passed on to another department, or was a '
@@ -256,12 +206,14 @@ FR_EN = {
     # =================================================================
     # ALERTE PUIS COMMENTAIRE OBLIGATOIRES SUR LES CRITERES NON CONFORMES
     # =================================================================
-    "Non conforme — ce constat relève-t-il d'un cas d'alerte critique ?":
-        'Not compliant — does this finding amount to a critical alert case?',
-    "À renseigner avant le commentaire. Plusieurs cas peuvent être cochés ; "
-    "« Aucune alerte critique » si le constat n'est pas une alerte.":
-        'To be filled in before the comment. Several cases can be ticked; '
-        '“No critical alert” if the finding is not an alert.',
+    "Non conforme — quel cas d'alerte critique ce constat révèle-t-il ?":
+        'Not compliant — which critical alert case does this finding reveal?',
+    "À renseigner avant le commentaire. Cochez le ou les cas que ce constat "
+    "révèle. La liste est fermée : ce qu'aucun cas ne couvre se décrit dans le "
+    "commentaire, juste en dessous.":
+        'To be filled in before the comment. Tick the case or cases this '
+        'finding reveals. The list is closed: anything no case covers is '
+        'described in the comment just below.',
     "Non conforme — décrivez le fait observé ou rapportez la formulation "
     "exacte du conseiller.":
         'Not compliant — describe the observed fact or report the exact wording '
@@ -430,6 +382,10 @@ FR_EN = {
         'Q22 Did the way the adviser signed off seem courteous, natural and '
         'professional (a fitting thank-you or good wish), without artificially '
         'insisting on repeating your name?',
+    "Q23 Le conseiller a-t-il informé le client qu'il recevra un sondage de "
+    "satisfaction afin de partager son avis ?":
+        'Q23 Did the adviser tell the customer that they would receive a '
+        'satisfaction survey to share their opinion?',
     "Score — Clôture de l'entretien": 'Score — Closing the call',
 
     # =================================================================
@@ -442,58 +398,17 @@ FR_EN = {
     "Ces critères portent sur le **traitement technique du scénario que vous "
     "avez joué** : ce que le conseiller a effectivement vérifié, expliqué ou "
     "fait.\n\n"
-    "Seuls ceux du scénario coché en page « Scénario joué » s'affichent. Ils "
-    "prennent la **même échelle** que les sections A à H et comptent dans le "
-    "**même score**.":
+    "Seuls ceux du scénario coché en page « Scénario joué » s'affichent, et "
+    "ils se remplissent **comme les sections A à H**.":
         'These criteria cover the **technical handling of the scenario you '
         'played**: what the adviser actually checked, explained or did.\n\n'
         'Only those of the scenario ticked on the “Scenario played” page are '
-        'shown. They use the **same scale** as sections A to H and count '
-        'towards the **same score**.',
+        'shown, and they are filled in **like sections A to H**.',
     'Score — Maîtrise du scénario': 'Score — Command of the scenario',
 
     # =================================================================
     # ALERTES CRITIQUES
     # =================================================================
-    'Alertes critiques — à signaler obligatoirement':
-        'Critical alerts — must be reported',
-    "**Principe.** Une alerte critique doit être **décrite factuellement**, "
-    "même si le score global de l'appel reste élevé. Elle fait l'objet d'une "
-    "analyse séparée et d'un commentaire obligatoire, et n'entre pas dans le "
-    "calcul du score.\n\n"
-    "Les alertes déjà cochées sur un critère **non conforme** sont remontées : "
-    "**ne les répétez pas ici.** Cette page ne recueille que les cas observés "
-    "**en dehors d'un critère non conforme**.":
-        '**Principle.** A critical alert must be **described factually**, even '
-        'if the overall score for the call remains high. It is analysed '
-        'separately and calls for a mandatory comment, and does not enter the '
-        'score calculation.\n\n'
-        'Alerts already ticked on a criterion marked **not compliant** are '
-        'reported: **do not repeat them here.** This page only collects cases '
-        'observed **outside a criterion marked not compliant**.',
-    "Autres cas d'alerte critique observés pendant cet appel":
-        'Other critical alert cases observed during this call',
-    "Hors de ceux déjà signalés sur un critère non conforme. Plusieurs cas "
-    "peuvent être cochés. Cocher « Aucune alerte critique » si aucun autre "
-    "ne s'est produit.":
-        'Excluding those already reported on a criterion marked not compliant. '
-        'Several cases can be ticked. Tick “No critical alert” if no other one '
-        'occurred.',
-    "« Aucune alerte critique » ne peut pas être cochée en même temps qu'une "
-    "alerte.":
-        '“No critical alert” cannot be ticked at the same time as an alert.',
-    "Alerte critique — décrivez les faits observés, avec la formulation exacte "
-    "du conseiller.":
-        'Critical alert — describe the facts observed, with the exact wording '
-        'used by the adviser.',
-    "Obligatoire dès qu'une alerte est cochée. Décrire ce qui s'est produit, "
-    "pas ce qui aurait dû se produire. Sous « Aucune alerte critique » le "
-    "champ reste ouvert mais facultatif : servez-vous-en pour un manquement "
-    "grave qui n'entre dans aucun des cas listés.":
-        'Required as soon as an alert is ticked. Describe what happened, not '
-        'what should have happened. Under “No critical alert” the field stays '
-        'open but optional: use it for a serious failing that fits none of the '
-        'cases listed.',
     "Violation ou exposition de données personnelles / défaut manifeste de "
     "confidentialité":
         'Breach or exposure of personal data / manifest failure of '
@@ -513,7 +428,6 @@ FR_EN = {
     "non justifié":
         'Transfer, referral to a branch or dropped handling that is manifestly '
         'unjustified',
-    'Aucune alerte critique': 'No critical alert',
 
     # --- cas propres a la section A (accessibilite & serveur vocal)
     "Message d'accueil incohérent ou trompeur, ne correspondant pas aux "
@@ -541,42 +455,93 @@ FR_EN = {
         'Excessive waiting time left unannounced, or no information message '
         'while being connected',
 
+    # --- cas propres a la dimension C (comprehension du besoin)
+    "Interruption répétée ou inappropriée du client, empêchant l'expression "
+    "complète du besoin":
+        'Repeated or inappropriate interruption of the customer, preventing '
+        'the need from being stated in full',
+    "Absence totale d'écoute active : le conseiller ne manifeste aucun intérêt "
+    "ou ne tient pas compte des propos du client":
+        'No active listening at all: the advisor shows no interest or takes no '
+        'account of what the customer says',
+    "Questions non pertinentes ou hors sujet, traduisant une mauvaise "
+    "qualification du problème":
+        'Irrelevant or off-topic questions, reflecting poor qualification of '
+        'the problem',
+    "Absence de reformulation ou de validation, entraînant une mauvaise "
+    "compréhension du motif d'appel":
+        'No rephrasing or checking back, leading to a misunderstanding of the '
+        'reason for the call',
+    "Erreur manifeste d'interprétation du besoin, conduisant à une réponse ou "
+    "une action inadaptée":
+        'Manifest misreading of the need, leading to an unsuitable answer or '
+        'action',
+    "Demande du client ignorée ou détournée, sans justification ni "
+    "orientation vers une solution appropriée":
+        "Customer's request ignored or deflected, with no justification and no "
+        'pointer to a suitable solution',
+
+    # --- cas propres a Q9 (maitrise des offres, services et procedures)
+    "Information fausse ou incohérente sur une offre ou un service":
+        'False or inconsistent information about an offer or a service',
+    "Procédure mal expliquée, entraînant une mauvaise orientation du client":
+        'Procedure poorly explained, leading the customer the wrong way',
+    "Promesse non maîtrisée : délai irréaliste ou engagement impossible à "
+    "tenir":
+        'Unmastered promise: an unrealistic timescale or a commitment that '
+        'cannot be kept',
+
+    # --- cas propres a Q10 (exactitude et coherence de la reponse)
+    "Réponse contradictoire par rapport aux procédures officielles":
+        'Answer contradicting the official procedures',
+    "Erreur manifeste dans les informations fournies (tarifs, conditions, "
+    "délais)":
+        'Manifest error in the information given (prices, conditions, '
+        'timescales)',
+    "Engagement trompeur pouvant induire le client en erreur":
+        'Misleading commitment liable to mislead the customer',
+
+    # --- cas propres a Q11 (pedagogie et clarte des explications)
+    "Explication confuse ou trop technique, incompréhensible pour le client":
+        'Confusing or overly technical explanation, incomprehensible to the '
+        'customer',
+    "Absence d'étapes ou d'alternatives claires pour résoudre le problème":
+        'No clear steps or alternatives for solving the problem',
+    "Langage inadapté : jargon interne, termes non vulgarisés":
+        'Unsuitable language: in-house jargon, terms not put in plain words',
+
     # =================================================================
     # SYNTHESE QUALITATIVE
     # =================================================================
     'Synthèse qualitative': 'Qualitative summary',
-    'Q23 Quel est le principal point fort de cet appel ?':
-        'Q23 What is the main strength of this call?',
+    'Q24 Quel est le principal point fort de cet appel ?':
+        'Q24 What is the main strength of this call?',
     "Un fait précis, pas une appréciation générale.":
         'A specific fact, not a general impression.',
-    'Q24 Quel est le principal irritant ou effort subi par le client ?':
-        'Q24 What is the main irritant or effort borne by the customer?',
+    'Q25 Quel est le principal irritant ou effort subi par le client ?':
+        'Q25 What is the main irritant or effort borne by the customer?',
     "Ce qui a coûté du temps, une répétition ou une inquiétude au client.":
         'Whatever cost the customer time, a repetition or a worry.',
-    'Q25 Le client devrait-il rappeler ou contacter un autre canal pour le '
+    'Q26 Le client devrait-il rappeler ou contacter un autre canal pour le '
     'même motif ?':
-        'Q25 Would the customer have to call again or use another channel for '
+        'Q26 Would the customer have to call again or use another channel for '
         'the same reason?',
-    'Q25 Pourquoi ?': 'Q25 Why?',
-    "Ce qui reste à faire, ou ce qui rend un nouveau contact inutile.":
-        'What is still outstanding, or what makes a further contact '
-        'unnecessary.',
+    'Q26 Pourquoi ?': 'Q26 Why?',
+    "Ce qui reste à faire, et par quel canal le client devrait le faire.":
+        'What is still outstanding, and through which channel the customer '
+        'would have to do it.',
 
     # =================================================================
-    # SCORE DE L'APPEL
+    # FIN DE L'EVALUATION
     # =================================================================
-    "Score de l'appel": 'Score for the call',
-    "Résultat de l'appel, calculé par le formulaire : rien à saisir. Le score "
-    "est la part des points obtenus sur les points réellement en jeu — un "
-    "critère **non applicable**, ou masqué parce que la situation ne s'est pas "
-    "produite, n'entre ni au numérateur ni au dénominateur.":
-        "Result for the call, calculated by the form: nothing to enter. The "
-        'score is the share of the points obtained out of the points actually '
-        'at stake — a criterion that is **not applicable**, or hidden because '
-        'the situation did not arise, enters neither the numerator nor the '
-        'denominator.',
+    "Fin de l'évaluation": 'End of the assessment',
+    "**C'est terminé.** Vérifiez les questions marquées en rouge, puis "
+    "enregistrez et envoyez le formulaire.":
+        '**You are done.** Check any question flagged in red, then save and '
+        'send the form.',
+    # Libelle d'un `calculate` : jamais affiche, conserve pour l'export et le
+    # tableau de bord.
     "Score total de l'appel": 'Total score for the call',
-    'sur 100, toutes sections confondues': 'out of 100, across all sections',
 
     # =================================================================
     # MODALITES
@@ -588,6 +553,11 @@ FR_EN = {
     'Non applicable': 'Not applicable',
     'Oui': 'Yes',
     'Non': 'No',
+    'Aucun renvoi': 'No referral',
+    'Vers un autre canal (application, USSD, site, réseaux sociaux)':
+        'To another channel (app, USSD, website, social media)',
+    'Vers une agence': 'To a branch',
+    'Vers un point de vente physique': 'To a physical outlet',
     'Français': 'French',
     'Anglais': 'English',
     'TEST - Interview non valide': 'TEST - Invalid interview',
@@ -710,8 +680,7 @@ INTERFACE = {
     "Choisissez d'abord : ": 'Choose first: ',
     # Noms courts des champs cites dans les etiquettes « Posée si … ».
     'Escalade': 'Escalation',
-    'Renvoi / autre canal': 'Referral / another channel',
-    'Renvoi en agence': 'Referral to a branch',
+    'Renvoi': 'Referral',
     'Mises en attente': 'Holds',
     'Transferts': 'Transfers',
 
@@ -745,8 +714,8 @@ INTERFACE = {
     'Score total par opérateur': 'Total score by operator',
     'Toutes sections confondues': 'All sections combined',
     'Répartition des notes': 'Breakdown of the marks',
-    'Toutes réponses des 22 critères scorés, N/A compris':
-        'Every answer to the 22 scored criteria, N/A included',
+    'Toutes réponses des critères scorés, N/A compris':
+        'Every answer to the scored criteria, N/A included',
     'Appels par tranche horaire': 'Calls by time slot',
     'Appels par enquêteur': 'Calls by auditor',
     'Dernières soumissions': 'Latest submissions',
@@ -768,10 +737,11 @@ INTERFACE = {
     "Clôture de l'entretien": 'Closing the call',
     'Maîtrise du scénario': 'Command of the scenario',
 
-    # --- alertes critiques
-    "Posée dès que les alertes critiques sont renseignées":
-        'Shown as soon as the critical alerts question is answered',
-    "Obligatoire si une alerte est cochée": 'Required if an alert is ticked',
+    # --- conditions ecrites a la main (LIBELLE_SPECIAL du guide)
+    "Posée si un renvoi a été indiqué": 'Shown if a referral was recorded',
+    "Posée en cas d'escalade ou de renvoi":
+        'Shown in the event of an escalation or a referral',
+
     'Obligatoire sous condition': 'Required under a condition',
     'Alertes critiques': 'Critical alerts',
     'Score par scénario': 'Score by scenario',
@@ -856,6 +826,15 @@ JS_TEXTES = {
                 '1 required answer is still missing on this step.'),
     'reste_n': ('Il reste {n} réponses obligatoires à renseigner sur cette étape.',
                 '{n} required answers are still missing on this step.'),
+    # Une reponse peut etre presente ET FAUSSE : le message le dit au moment du
+    # changement d'etape, la ou l'erreur a ete commise.
+    'corriger_1': ('1 réponse de cette étape est à corriger avant de continuer.',
+                   '1 answer on this step must be corrected before you '
+                   'continue.'),
+    'corriger_n': ('{n} réponses de cette étape sont à corriger avant de '
+                   'continuer.',
+                   '{n} answers on this step must be corrected before you '
+                   'continue.'),
     'terminer': ('Terminer', 'Finish'),
     'voir_recap': ('Voir le récapitulatif', 'See the summary'),
     'suivant': ('Suivant', 'Next'),

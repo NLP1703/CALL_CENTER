@@ -180,7 +180,7 @@ D = json.loads((RACINE / "form_structure.json").read_text(encoding="utf-8"))
 CALC = {r["name"]: r["calculation"] for r in D["survey"] if r.get("calculation")}
 NOTEES = [n for s in D["notation"].values() for n, _ in s["questions"]]
 
-# Les 22 criteres A->H sont poses a chaque appel ; les 106 criteres de la
+# Les 23 criteres A->H sont poses a chaque appel ; les 106 criteres de la
 # section I ne le sont que pour le scenario joue -- un appel n'en voit jamais
 # plus de cinq. Les fixtures « tous les criteres a X » portent donc sur les
 # seuls A->H, et la section I se remplit scenario par scenario.
@@ -232,18 +232,18 @@ print("=== SCORES CALCULES PAR LE FORMULAIRE ===\n")
 tous = []
 
 tous.append(cas(
-    "Appel parfait : les 22 criteres a 100, escalade et renvoi survenus",
+    "Appel parfait : les 23 criteres a 100, escalade et renvoi survenus",
     CENT,
     {"SCORE_A": "100", "SCORE_E": "100", "SCORE_F": "100",
      "SCORE_TOTAL": "100"}))
 
 tous.append(cas(
-    "Appel non conforme : les 22 criteres a 0",
+    "Appel non conforme : les 23 criteres a 0",
     ZERO,
     {"SCORE_A": "0", "SCORE_E": "0", "SCORE_TOTAL": "0"}))
 
 tous.append(cas(
-    "Conformite partielle : les 22 criteres a 50",
+    "Conformite partielle : les 23 criteres a 50",
     MOITIE,
     {"SCORE_A": "50", "SCORE_H": "50", "SCORE_TOTAL": "50"}))
 
@@ -290,12 +290,12 @@ tous.append(cas(
 # --- section I : les criteres du scenario joue comptent avec les autres
 tous.append(cas(
     "S01 joue, ses 5 criteres a 0 : ils pesent dans le score total "
-    "(2200 / 2700)",
+    "(2300 / 2800)",
     {**CENT, **scenario("S01", "0", "0", "0", "0", "0")},
-    {"SCORE_TOTAL": "81", "SCORE_I": "0", "SCORE_A": "100"}))
+    {"SCORE_TOTAL": "82", "SCORE_I": "0", "SCORE_A": "100"}))
 
 tous.append(cas(
-    "S18 n'a que 3 criteres : le denominateur suit (2200 / 2500)",
+    "S18 n'a que 3 criteres : le denominateur suit (2300 / 2600)",
     {**CENT, **scenario("S18", "0", "0", "0")},
     {"SCORE_TOTAL": "88", "SCORE_I": "0"}))
 
@@ -307,7 +307,7 @@ tous.append(cas(
 tous.append(cas(
     "N/A sur un critere de scenario : il sort des deux sommes (S18 -> 2 sur 3)",
     {**CENT, **scenario("S18", "100", "na", "0")},
-    {"SCORE_I": "50", "SCORE_TOTAL": "96"}))   # 2300 / 2400, le N/A hors des deux
+    {"SCORE_I": "50", "SCORE_TOTAL": "96"}))   # 2400 / 2500, le N/A hors des deux
 
 tous.append(cas(
     "Aucun scenario joue : la section I reste vide, le total ne bouge pas",

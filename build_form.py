@@ -10,28 +10,29 @@ Regles de construction :
   2. Les DONNEES FACTUELLES (temps d'attente, duree, mises en attente,
      transferts, renvoi) sont collectees dans une page a part, SANS score : la
      consigne du PDF les separe explicitement du score comportemental.
-  3. Les 22 criteres scores prennent la meme echelle -- totalement conforme,
+  3. Les 23 criteres scores prennent la meme echelle -- totalement conforme,
      partiellement conforme, non conforme, non applicable -- mais LE BAREME NE
      S'AFFICHE JAMAIS A L'ENQUETEUR : ni le chiffre dans la modalite, ni le
      score de section pendant la saisie. Il note ce qu'il a entendu ; le
      formulaire convertit en arriere-plan et ne montre le score de l'appel
      qu'a la derniere page. « Non applicable » sort du numerateur COMME du
      denominateur.
-  4. TOUT 0 EST QUALIFIE PUIS ETAYE. Un 0 est une situation exceptionnelle ou
-     une alerte critique : le formulaire demande d'abord si le constat releve
-     d'un cas d'alerte critique -- l'un des cas nommes de sa section --, PUIS
-     le commentaire obligatoire -- un fait observe ou la formulation exacte du
-     conseiller. On qualifie avant de decrire. Les deux champs n'apparaissent
-     que lorsque la reponse est 0.
+  4. TOUT 0 EST QUALIFIE PUIS ETAYE. Un 0 est une alerte critique : le
+     formulaire fait NOMMER le cas qu'il revele -- l'un des cas de la liste de
+     sa section, la question etant obligatoire et n'offrant aucune sortie --,
+     PUIS le commentaire obligatoire -- un fait observe ou la formulation
+     exacte du conseiller. On qualifie avant de decrire. Les deux champs
+     n'apparaissent que lorsque la reponse est 0.
   5. LOGIQUE CONDITIONNELLE. Escalade, renvoi en agence / autre canal, mise en
      attente et transferts ne sont renseignes que si l'evenement s'est produit ;
      les questions non applicables sont masquees automatiquement (`relevant`),
      et une question masquee sort du calcul du score.
   6. ALERTES CRITIQUES hors score. Les cas nommes a signaler obligatoirement
-     sont coches sur le critere qui les revele (regle 4) ; la page dediee ne
-     recueille plus que ceux qu'aucun 0 ne porte. Aucun n'entre dans le calcul :
-     une alerte doit remonter meme quand le score global de l'appel reste
-     eleve.
+     se cochent SUR LE CRITERE QUI LES REVELE, et nulle part ailleurs
+     (regle 4) : il n'y a plus de page dediee en fin de questionnaire, elle
+     faisait ressaisir ce qui etait deja saisi. Aucun cas n'entre dans le
+     calcul : une alerte doit remonter meme quand le score global de l'appel
+     reste eleve.
 
 Sortie : questionnaire_audit_call_center.xlsx + form_structure.json
 """
@@ -77,8 +78,8 @@ choices = []
 # score de 0 y compris, mais ils ne s'affichent que lorsque le 0 est coche.
 # Aucune exception depuis le retrait de l'enregistrement de l'appel. Une
 # question peut a la place poser elle-meme son `required` : une EXPRESSION,
-# quand l'obligation depend d'une reponse et non de la question (voir
-# `alertes_com`, page 14). La boucle de fin ne l'ecrase pas.
+# quand l'obligation depend d'une reponse et non de la question. La boucle de
+# fin ne l'ecrase pas.
 OPTIONNELLES = set()
 
 
@@ -136,7 +137,7 @@ def liste_notee(nom, items):
     BAREME[nom] = {it[0]: (it[2] if len(it) > 2 else None) for it in items}
 
 
-# L'ECHELLE DU QUESTIONNAIRE. Elle est unique : les 22 criteres scores la
+# L'ECHELLE DU QUESTIONNAIRE. Elle est unique : les 23 criteres scores la
 # partagent, ce qui rend les sections directement comparables entre elles.
 # « Non applicable » ne vaut pas zero : la modalite n'a pas de points et sort du
 # denominateur (consigne du PDF : N/A seulement si le critere n'a reellement pas
@@ -157,6 +158,17 @@ liste_notee("conformite", [
 # Oui / Non des questions d'aiguillage : elles ne sont pas notees, ce sont des
 # declencheurs de logique conditionnelle, pas des points de controle.
 liste("oui_non", [("1", "Oui"), ("2", "Non")])
+
+# LE RENVOI SE COCHE SUR UNE LISTE, PLUS SUR DEUX OUI / NON.
+# « Aucun renvoi » est une modalite de la liste, et non l'absence de reponse :
+# la question reste obligatoire des qu'elle s'affiche, et le cas « pas de
+# renvoi » se lit dans la base au lieu de s'y deviner. Agence et point de vente
+# sont distingues : ils n'ont ni le meme maillage ni la meme lecture a l'analyse.
+liste("renvoi", [
+    ("0", "Aucun renvoi"),
+    ("1", "Vers un autre canal (application, USSD, site, réseaux sociaux)"),
+    ("2", "Vers une agence"),
+    ("3", "Vers un point de vente physique")])
 
 liste("langue", [("fr", "Français"), ("en", "Anglais")])
 
@@ -211,15 +223,16 @@ liste("scenario", SCENARIOS)
 
 # ALERTES CRITIQUES. Cinq cas nommes a signaler obligatoirement, cochables
 # ensemble : une alerte n'est pas une note, elle fait l'objet d'une analyse
-# separee et ne depend pas du score. Une seule modalite est ajoutee a la liste
-# du document : « Aucune alerte critique », pour que la question puisse etre
-# obligatoire sans forcer a cocher une alerte, avec une contrainte qui
-# l'empeche d'etre cochee avec les autres. La liste reste fermee sur les cas
-# nommes du document : un manquement qui n'y entre pas se decrit dans le
-# commentaire.
-# La liste sert deux fois : sur chaque critere note 0 (voir `critere`) et sur la
-# page 13, qui ne ramasse que les cas etrangers a un 0.
-liste("alertes", [
+# separee et ne depend pas du score. La liste reste fermee sur les cas nommes du
+# document : un manquement qui n'y entre pas se decrit dans le commentaire.
+#
+# ELLE NE SE PROPOSE QU'EN FACE D'UN 0 (`alertes_nc`, voir `critere`). Un 0 doit
+# nommer le cas d'alerte qu'il revele ; la question etant obligatoire,
+# l'enqueteur en coche forcement un. La liste ne porte donc QUE DES CAS :
+# « Aucune alerte critique » ouvrirait une sortie a une question qui n'en veut
+# pas. La page dediee qui la posait a tous les appels a ete supprimee -- elle
+# rouvrait cette sortie et dupliquait une saisie deja faite sur le critere.
+CAS_ALERTES = [
     ("confidentialite",
      "Violation ou exposition de données personnelles / défaut manifeste de "
      "confidentialité"),
@@ -233,18 +246,17 @@ liste("alertes", [
      "Promesse de délai / de traitement non maîtrisée ou engagement trompeur"),
     ("abandon",
      "Transfert, renvoi en agence ou abandon de prise en charge manifestement "
-     "non justifié"),
-    ("aucune", "Aucune alerte critique")])
+     "non justifié")]
+liste("alertes_nc", CAS_ALERTES)
 
 # ALERTES CRITIQUES PROPRES A LA SECTION A. L'accessibilite et le serveur vocal
 # se jouent avant toute prise de ligne : les cinq cas generaux sont tous des
 # faits du conseiller et aucun n'y est observable, tandis que les defaillances
 # qui s'y signalent -- accueil trompeur, menu mort, boucle sans sortie -- n'ont
 # d'equivalent nulle part ailleurs dans le questionnaire. La section a donc sa
-# propre liste, cochable sur ses seuls criteres non conformes. « Aucune alerte
-# critique » y garde son code, son libelle et sa contrainte : le tableau de bord
-# les agrege sans cas particulier, et une seule traduction sert les deux
-# listes.
+# propre liste, cochable sur ses seuls criteres non conformes. Elle ne se
+# propose donc jamais qu'en face d'un 0 : « Aucune alerte critique » n'y figure
+# pas plus que dans `alertes_nc`.
 liste("alertes_a", [
     ("accueil_incoherent",
      "Message d'accueil incohérent ou trompeur, ne correspondant pas aux "
@@ -263,11 +275,68 @@ liste("alertes_a", [
      "générant une rupture de service"),
     ("attente_non_signalee",
      "Temps d'attente excessif non signalé, ou absence de message "
-     "d'information pendant la mise en relation"),
-    ("aucune", "Aucune alerte critique")])
+     "d'information pendant la mise en relation")])
 
 
 
+
+# ALERTES CRITIQUES PROPRES A LA DIMENSION C (comprehension du besoin). Le PDF
+# v1.2 nomme six manquements a l'ecoute et a la qualification du besoin. Ils
+# S'AJOUTENT aux cinq cas generaux au lieu de les remplacer : contrairement a la
+# section A, un conseiller est en ligne et les cinq cas generaux y sont tous
+# observables. La section n'a qu'une liste, le document ne detaillant pas par
+# critere.
+CAS_C = [
+    ("interruption",
+     "Interruption répétée ou inappropriée du client, empêchant l'expression "
+     "complète du besoin"),
+    ("sans_ecoute",
+     "Absence totale d'écoute active : le conseiller ne manifeste aucun intérêt "
+     "ou ne tient pas compte des propos du client"),
+    ("questions_hors_sujet",
+     "Questions non pertinentes ou hors sujet, traduisant une mauvaise "
+     "qualification du problème"),
+    ("sans_reformulation",
+     "Absence de reformulation ou de validation, entraînant une mauvaise "
+     "compréhension du motif d'appel"),
+    ("besoin_mal_compris",
+     "Erreur manifeste d'interprétation du besoin, conduisant à une réponse ou "
+     "une action inadaptée"),
+    ("demande_ignoree",
+     "Demande du client ignorée ou détournée, sans justification ni "
+     "orientation vers une solution appropriée")]
+liste("alertes_c", CAS_ALERTES + CAS_C)
+
+# ALERTES CRITIQUES PROPRES A LA DIMENSION D (expertise & exactitude). Le PDF
+# v1.2 les donne CRITERE PAR CRITERE -- trois cas pour Q9, trois pour Q10, trois
+# pour Q11 -- et non par section : chaque critere a donc sa liste, toujours
+# ajoutee aux cinq cas generaux.
+CAS_Q9 = [
+    ("offre_fausse",
+     "Information fausse ou incohérente sur une offre ou un service"),
+    ("procedure_mal_expliquee",
+     "Procédure mal expliquée, entraînant une mauvaise orientation du client"),
+    ("promesse_irrealiste",
+     "Promesse non maîtrisée : délai irréaliste ou engagement impossible à "
+     "tenir")]
+CAS_Q10 = [
+    ("reponse_contradictoire",
+     "Réponse contradictoire par rapport aux procédures officielles"),
+    ("erreur_manifeste",
+     "Erreur manifeste dans les informations fournies (tarifs, conditions, "
+     "délais)"),
+    ("engagement_trompeur",
+     "Engagement trompeur pouvant induire le client en erreur")]
+CAS_Q11 = [
+    ("explication_confuse",
+     "Explication confuse ou trop technique, incompréhensible pour le client"),
+    ("sans_etapes",
+     "Absence d'étapes ou d'alternatives claires pour résoudre le problème"),
+    ("jargon",
+     "Langage inadapté : jargon interne, termes non vulgarisés")]
+liste("alertes_q9", CAS_ALERTES + CAS_Q9)
+liste("alertes_q10", CAS_ALERTES + CAS_Q10)
+liste("alertes_q11", CAS_ALERTES + CAS_Q11)
 
 # =====================================================================
 # CALCUL DES SCORES
@@ -307,11 +376,13 @@ def _termes(noms):
 def score(nom, label, noms, hint="", affiche=False):
     """Champ de score : pourcentage des points obtenus sur les points en jeu.
 
-    `affiche` est faux par defaut : un score de section calcule sous les yeux de
-    l'enqueteur pendant qu'il note est un biais -- il voit sa moyenne monter ou
-    descendre et ajuste la note suivante. Le champ reste un `calculate` : il est
-    calcule et exporte comme avant, il ne s'affiche simplement plus. Seul le
-    score total est montre, une fois toutes les reponses saisies (page 15).
+    AUCUN SCORE NE S'AFFICHE DANS LE QUESTIONNAIRE, total compris : un chiffre
+    calcule sous les yeux de l'enqueteur est un biais -- il voit sa moyenne
+    monter ou descendre et ajuste la note suivante. Les champs restent des
+    `calculate` : ils sont calcules et exportes comme avant, ils ne se montrent
+    nulle part. Le score se lit dans la base et sur le tableau de bord.
+    `affiche` reste disponible pour un besoin futur ; plus aucun appel ne
+    l'active.
     """
     num, den = _termes(noms)
     calcul = f"if(({den}) = 0, '', round(100 * ({num}) div ({den})))"
@@ -322,19 +393,24 @@ def score(nom, label, noms, hint="", affiche=False):
 
 
 # Un score de 0 est une situation exceptionnelle ou une alerte critique : le PDF
-# impose de l'etayer. Les champs sont les memes pour les 22 criteres -- un seul
+# impose de l'etayer. Les champs sont les memes pour tous les criteres -- un seul
 # libelle, une seule traduction -- et n'apparaissent que sur un 0.
 #
 # ORDRE VOULU : l'alerte d'abord, le commentaire ensuite. L'enqueteur qualifie
-# le constat (releve-t-il d'un cas a signaler obligatoirement ?) avant
-# de le decrire ; la description qu'il redige ensuite sait alors ce qu'elle doit
+# le constat -- quel cas a signaler obligatoirement revele-t-il ? -- avant de le
+# decrire ; la description qu'il redige ensuite sait alors ce qu'elle doit
 # etablir.
+#
+# LA QUESTION N'A PAS DE SORTIE. Elle ne demande plus SI le constat est une
+# alerte mais LEQUEL il revele : la liste n'offre que des cas, et la question
+# etant obligatoire, un 0 en nomme forcement un.
 LIBELLE_ALERTE = (
-    "Non conforme — ce constat relève-t-il d'un cas d'alerte critique ?"
+    "Non conforme — quel cas d'alerte critique ce constat révèle-t-il ?"
 )
 HINT_ALERTE = (
-    "À renseigner avant le commentaire. Plusieurs cas peuvent être cochés ; "
-    "« Aucune alerte critique » si le constat n'est pas une alerte."
+    "À renseigner avant le commentaire. Cochez le ou les cas que ce constat "
+    "révèle. La liste est fermée : ce qu'aucun cas ne couvre se décrit dans le "
+    "commentaire, juste en dessous."
 )
 LIBELLE_COMMENTAIRE = (
     "Non conforme — décrivez le fait observé ou rapportez la formulation "
@@ -344,15 +420,7 @@ HINT_COMMENTAIRE = (
     "Obligatoire pour toute non-conformité. Un fait, une phrase entendue : "
     "pas une appréciation générale."
 )
-# « Aucune alerte critique » est exclusive : elle dit qu'il n'y a rien a
-# signaler, elle ne peut donc pas accompagner un cas signale. Meme controle
-# qu'en page 13, meme message -- une seule traduction pour les deux.
-CONTRAINTE_ALERTE = "not(selected(., 'aucune')) or count-selected(.) = 1"
-MSG_ALERTE = ("« Aucune alerte critique » ne peut pas être cochée en même temps "
-              "qu'une alerte.")
-
-
-def critere(nom, label, relevant="", alertes="alertes"):
+def critere(nom, label, relevant="", alertes="alertes_nc"):
     """Critere note, son alerte critique puis son commentaire, sur un 0 seul.
 
     La condition des deux champs se contente de `= '0'` : une question masquee
@@ -362,12 +430,13 @@ def critere(nom, label, relevant="", alertes="alertes"):
 
     `alertes` nomme la liste de cas proposee. Par defaut les cinq cas generaux,
     valables partout ou un conseiller est en ligne ; la section A, jouee avant
-    toute prise de ligne, passe la sienne (voir `alertes_a`).
+    toute prise de ligne, passe la sienne (voir `alertes_a`). Ni l'une ni
+    l'autre ne porte « Aucune alerte critique » : il n'y a donc pas de
+    contrainte d'exclusivite a poser ici.
     """
     q("select_one conformite", nom, label, relevant=relevant)
     q(f"select_multiple {alertes}", f"{nom}_alerte", LIBELLE_ALERTE,
-      hint=HINT_ALERTE, relevant=f"${{{nom}}} = '0'",
-      constraint=CONTRAINTE_ALERTE, constraint_message=MSG_ALERTE)
+      hint=HINT_ALERTE, relevant=f"${{{nom}}} = '0'")
     q("text", f"{nom}_com", LIBELLE_COMMENTAIRE, hint=HINT_COMMENTAIRE,
       relevant=f"${{{nom}}} = '0'", appearance="multiline")
 
@@ -377,61 +446,38 @@ def critere(nom, label, relevant="", alertes="alertes"):
 # =====================================================================
 groupe("grp_consignes", "Consignes générales pour l'enquêteur")
 q("note", "note_lecture",
-  "**LISEZ CES CONSIGNES AVANT DE COMMENCER L'ÉVALUATION.**",
+  "**À LIRE AVANT DE COMMENCER.**",
   media="mds_logo.png")
 q("note", "note_principes",
-  "**1. PRINCIPES D'UTILISATION**\n\n"
-  "• **Un seul scénario par appel.** Le questionnaire est renseigné immédiatement "
-  "après avoir raccroché.\n"
-  "• Les données factuelles (**temps d'attente, durée, transferts, mises en "
-  "attente**) sont collectées séparément du score comportemental.\n"
-  "• Pour les critères évalués, quatre réponses : **totalement conforme**, "
-  "**partiellement conforme / perfectible**, **non conforme**, **non "
-  "applicable**. Le formulaire les convertit lui-même en score : vous n'avez "
-  "aucun chiffre à manipuler.\n"
-  "• Les **questions conditionnelles** ne sont renseignées que lorsque la "
-  "situation se produit (**mise en attente, escalade, renvoi en agence, etc.**).\n"
-  "• **Tout « non conforme »** ou **toute situation exceptionnelle** doit être "
-  "étayé par un fait observé ou une formulation exacte du conseiller.\n"
-  "• **Le score final** mesure la performance de l'expérience par opérateur et "
-  "par scénario ; il ne doit pas être utilisé isolément comme mesure de "
-  "performance individuelle d'un conseiller.\n"
-  "• Cible de complétion post-appel : **médiane ≤ 5 minutes** après calibrage "
-  "et paramétrage de la logique conditionnelle.")
+  "**1. COMMENT REMPLIR**\n\n"
+  "• **Un seul scénario par appel.** Le questionnaire est renseigné "
+  "immédiatement après avoir raccroché.\n"
+  "• Commencez par la page **« Mesures »** : le formulaire ouvre ensuite les "
+  "seules questions qui concernent cet appel. **Une question qui ne s'affiche "
+  "pas n'est pas à renseigner.**\n"
+  "• Chaque critère a quatre réponses : **totalement conforme**, "
+  "**partiellement conforme**, **non conforme**, **non applicable**.\n"
+  "• Un **non conforme** ouvre deux champs : le **cas d'alerte critique** que "
+  "le constat révèle, puis le **commentaire obligatoire**. Qualifiez d'abord, "
+  "décrivez ensuite.\n"
+  "• Vous n'avez **rien à calculer** : vous décrivez ce que vous avez "
+  "entendu.\n"
+  "• Ne **révélez jamais** que vous êtes enquêteur.")
 q("note", "note_calibrage",
-  "**2. REPÈRES POUR LE CALIBRAGE**\n\n"
-  "• La notation doit porter sur ce qui a **effectivement été observé et "
-  "entendu** pendant l'appel, pas sur ce que l'enquêteur pense que le "
-  "conseiller aurait dû faire en dehors du scénario.\n"
-  "• Un critère n'est **non applicable** que s'il n'a réellement pas pu être "
-  "observé ou ne s'appliquait pas au parcours.\n"
-  "• **Partiellement conforme** doit décrire une conformité partielle "
-  "**concrète** : "
-  "réponse correcte mais incomplète, personnalisation mécanique, explication "
-  "partiellement claire, ownership partiel, etc.\n"
-  "• Le **FCR** ne signifie pas nécessairement que toute opération back-office "
-  "soit achevée pendant l'appel : il mesure si le client obtient, dès ce "
-  "contact, la résolution accessible ou une prise en charge complète et fiable "
-  "ne nécessitant pas un nouvel effort évitable.\n"
-  "• Les **verbatims exacts** sont à privilégier uniquement lorsqu'ils "
-  "illustrent un point exceptionnel, un irritant majeur ou une alerte critique.")
-q("note", "note_formulaire",
-  "**3. DANS CE FORMULAIRE**\n\n"
-  "• Les questions non applicables sont **masquées automatiquement** : "
-  "renseignez d'abord les « Mesures », le formulaire ouvre ensuite ce qui "
-  "s'applique à cet appel. Une question masquée sort du calcul du score.\n"
-  "• Un **non applicable** sort du calcul lui aussi : il ne vaut pas « non "
-  "conforme ».\n"
-  "• Un **non conforme** ouvre **deux champs** : l'**alerte critique** "
-  "éventuelle, puis le **commentaire obligatoire**. Qualifiez avant de "
-  "décrire ; si le constat n'est pas une alerte, cochez « Aucune alerte "
-  "critique ».\n"
-  "• Les **alertes critiques** n'entrent pas dans le score. La page qui leur "
-  "est consacrée ne recueille que celles qu'aucun critère non conforme ne "
-  "porte.\n"
-  "• **Aucune note ne s'affiche pendant la saisie** : le formulaire calcule "
-  "tout en arrière-plan et n'affiche le **score de l'appel** qu'à la dernière "
-  "page. Vous décrivez ce que vous avez entendu, vous n'additionnez rien.")
+  "**2. COMMENT QUALIFIER**\n\n"
+  "• Notez ce que vous avez **réellement observé et entendu** pendant l'appel, "
+  "pas ce que le conseiller aurait pu faire en dehors du scénario.\n"
+  "• **Non applicable** : seulement si le critère n'a pas pu être observé ou "
+  "ne s'appliquait pas à cet appel. Ce n'est pas un « non conforme ».\n"
+  "• **Partiellement conforme** : une conformité réelle mais incomplète — "
+  "réponse correcte mais partielle, personnalisation mécanique, explication à "
+  "moitié claire, prise en charge partielle.\n"
+  "• **Non conforme** : toujours étayé par un **fait observé** ou la "
+  "**formulation exacte** du conseiller, jamais par une appréciation "
+  "générale.\n"
+  "• **FCR** : le client obtient dès cet appel la résolution ou une prise en "
+  "charge complète et fiable, sans nouvel effort à fournir — même si une "
+  "opération reste à finir en back-office.")
 q("select_one type_interview", "type_interview", "Type d'interview",
   hint="TEST tant que la collecte n'est pas ouverte ; Live pour un appel réel",
   appearance="horizontal-compact")
@@ -529,38 +575,46 @@ q("integer", "nb_transferts", "Nombre de transferts",
   hint="0 si l'appel n'a jamais été transféré",
   constraint=". >= 0 and . <= 10",
   constraint_message="Indiquez un nombre compris entre 0 et 10.")
-# LE RENVOI SE SAISIT EN DEUX CASES, ET APRES UN TRANSFERT SEULEMENT.
+# LE RENVOI SE SAISIT SUR UNE SEULE LISTE, ET APRES UN TRANSFERT SEULEMENT.
 #
-# Deux cases : « autre canal » et « agence » etaient reunis dans une seule
-# question oui / non, et la base sortait un RENVOI_CANAL a 1 sans dire si le
-# client avait ete envoye sur l'application ou en boutique -- deux traitements
-# qui n'ont ni le meme cout pour lui ni la meme lecture a l'analyse. Les deux
-# cases sont independantes : un appel peut porter les deux (« faites-le sur
-# l'appli, sinon passez en agence »), ce qu'une liste a choix unique ne
-# permettait pas de dire.
+# Une liste, quatre modalites : « autre canal » et « agence » ont d'abord ete
+# reunis dans une question oui / non -- la base sortait un RENVOI a 1 sans dire
+# si le client avait ete envoye sur l'application ou en boutique -- puis scindes
+# en deux cases oui / non. L'enqueteur y cochait deux « Non » pour dire qu'il
+# n'y avait pas eu de renvoi du tout. Une liste unique enonce les destinations
+# et met « Aucun renvoi » parmi elles : une question, une reponse, une colonne.
+# Agence et point de vente y sont distingues, ce que les deux cases ne
+# disaient pas.
+#
+# A NOTER -- le choix etant unique, un appel qui porte deux destinations
+# (« faites-le sur l'appli, sinon passez en agence ») ne peut en declarer
+# qu'une ; `renvoi_precision` reste le seul endroit ou la seconde se lit.
+# Arbitrage assume, a rouvrir en select_multiple si le pilote montre des
+# renvois doubles frequents.
 #
 # Apres un transfert seulement (`nb_transferts > 0`) : consigne MDS. A NOTER --
 # un renvoi sans transfert devient inexprimable, alors qu'il se produit (le
 # conseiller repond lui-meme puis oriente vers l'agence) ; la premiere
 # soumission de la collecte est exactement ce cas. Arbitrage assume, a rouvrir
 # si les donnees montrent des renvois manquants.
-q("select_one oui_non", "renvoi_canal",
-  "Renvoi vers un autre canal (application, USSD, site, réseaux sociaux)",
-  hint="Le conseiller a-t-il invité le client à poursuivre sur un canal "
-       "numérique plutôt qu'au téléphone ?",
-  relevant="${nb_transferts} > 0", appearance="horizontal-compact")
-q("select_one oui_non", "renvoi_agence",
-  "Renvoi en agence ou point de vente physique",
-  hint="Le conseiller a-t-il invité le client à se déplacer ?",
-  relevant="${nb_transferts} > 0", appearance="horizontal-compact")
-q("text", "renvoi_precision", "Préciser le canal ou l'agence indiqués",
-  relevant="${renvoi_canal} = '1' or ${renvoi_agence} = '1'")
+q("select_one renvoi", "renvoi",
+  "Renvoi : le conseiller a-t-il orienté le client ailleurs qu'au téléphone ?",
+  hint="Une seule destination : celle vers laquelle le client a été orienté. "
+       "« Aucun renvoi » si le conseiller n'a invité le client ni à poursuivre "
+       "sur un canal numérique ni à se déplacer.",
+  relevant="${nb_transferts} > 0")
+# Les trois destinations sont enumerees plutot qu'ecrites « different de 0 » :
+# un renvoi masque -- appel sans transfert -- laisse le champ VIDE, et un vide
+# est lui aussi different de '0'. Enumerer ferme la question dans les deux cas.
+q("text", "renvoi_precision", "Préciser le canal, l'agence ou le point de vente "
+  "indiqués",
+  relevant="${renvoi} = '1' or ${renvoi} = '2' or ${renvoi} = '3'")
 # Ajout : le PDF conditionne Q15 a « une escalade ou un renvoi en agence » sans
 # jamais poser la question qui declenche le premier cas. Aiguillage non note.
 #
-# Posee apres un transfert seulement, comme les deux renvois : consigne MDS. La
+# Posee apres un transfert seulement, comme le renvoi : consigne MDS. La
 # page « Mesures » se lit donc ainsi -- le nombre de transferts commande tout ce
-# qui le suit. A NOTER : les trois declencheurs de Q15 etant desormais derriere
+# qui le suit. A NOTER : les deux declencheurs de Q15 etant desormais derriere
 # la meme condition, Q15 NE S'OUVRE PLUS SANS TRANSFERT, et sort du score sur
 # tout appel non transfere -- la section E y porte sur 4 criteres au lieu de 5.
 # Une escalade sans transfert se produit pourtant (« je transmets au service
@@ -640,17 +694,20 @@ fin_groupe()
 # PAGE 7 — C. COMPREHENSION DU BESOIN
 # =====================================================================
 groupe("grp_c", "C. COMPRÉHENSION DU BESOIN")
+# Les trois criteres de la section ajoutent aux cinq cas generaux les six
+# manquements a l'ecoute nommes par le PDF v1.2.
 critere("Q6",
         "Q6 Le conseiller vous a-t-il écouté attentivement et vous a-t-il "
-        "laissé exposer votre besoin sans interruption inappropriée ?")
+        "laissé exposer votre besoin sans interruption inappropriée ?",
+        alertes="alertes_c")
 critere("Q7",
         "Q7 Le conseiller a-t-il posé des questions pertinentes pour qualifier "
         "votre problème et obtenir uniquement les informations réellement "
-        "nécessaires ?")
+        "nécessaires ?", alertes="alertes_c")
 critere("Q8",
         "Q8 Le conseiller a-t-il reformulé ou validé sa compréhension lorsque "
         "cela était utile, en évitant que vous répétiez inutilement des "
-        "informations déjà données ?")
+        "informations déjà données ?", alertes="alertes_c")
 notees("C", "Compréhension du besoin", ["Q6", "Q7", "Q8"])
 score("SCORE_C", "Score — Compréhension du besoin",
       NOTATION["C"]["questions"])
@@ -660,17 +717,20 @@ fin_groupe()
 # PAGE 8 — D. EXPERTISE & EXACTITUDE DE LA REPONSE
 # =====================================================================
 groupe("grp_d", "D. EXPERTISE & EXACTITUDE DE LA RÉPONSE")
+# Seule section dont le PDF v1.2 detaille les cas CRITERE PAR CRITERE : chacun
+# porte donc sa propre liste, cinq cas generaux plus les trois qui le visent.
 critere("Q9",
         "Q9 Le conseiller a-t-il démontré une bonne maîtrise des offres, "
-        "services, procédures et parcours liés au scénario testé ?")
+        "services, procédures et parcours liés au scénario testé ?",
+        alertes="alertes_q9")
 critere("Q10",
         "Q10 La réponse fournie par le conseiller était-elle correcte, "
         "précise, cohérente et exempte d'informations contradictoires ou "
-        "manifestement erronées ?")
+        "manifestement erronées ?", alertes="alertes_q10")
 critere("Q11",
         "Q11 Les explications données vous ont-elles semblé simples, "
         "pédagogiques et adaptées, avec des étapes ou alternatives clairement "
-        "présentées ?")
+        "présentées ?", alertes="alertes_q11")
 notees("D", "Expertise & exactitude de la réponse", ["Q9", "Q10", "Q11"])
 score("SCORE_D", "Score — Expertise & exactitude de la réponse",
       NOTATION["D"]["questions"])
@@ -692,20 +752,23 @@ critere("Q14",
         "Q14 Le conseiller a-t-il pris ownership de votre demande, en évitant "
         "les transferts, renvois ou abandons de prise en charge non justifiés ?")
 # Conditionnelle : le PDF ne la pose qu'« en cas d'escalade ou de renvoi en
-# agence ». Les trois cas sont releves page 3 ; sans eux, la question est masquee
+# agence ». Les deux cas sont releves page 3 ; sans eux, la question est masquee
 # et sort du score.
 #
-# Ses trois declencheurs -- escalade, renvoi canal, renvoi agence -- ne sont
-# eux-memes poses que si l'appel a ete transfere : Q15 ne peut donc plus s'ouvrir
-# sur un appel sans transfert, ou la section E porte sur 4 criteres au lieu de 5.
-# La condition reste ecrite en clair plutot que ramenee a `nb_transferts > 0` :
-# un appel transfere sans escalade ni renvoi n'a pas non plus d'objet pour Q15.
+# Ses deux declencheurs -- escalade et renvoi -- ne sont eux-memes poses que si
+# l'appel a ete transfere : Q15 ne peut donc plus s'ouvrir sur un appel sans
+# transfert, ou la section E porte sur 4 criteres au lieu de 5. La condition
+# reste ecrite en clair plutot que ramenee a `nb_transferts > 0` : un appel
+# transfere sans escalade ni renvoi n'a pas non plus d'objet pour Q15. Cote
+# renvoi les trois destinations sont enumerees : « Aucun renvoi » (0) est une
+# reponse et non un vide, et une condition tout en OU reste lisible par le
+# guide, dont le traducteur d'expressions ne melange pas les ET et les OU.
 critere("Q15",
         "Q15 En cas d'escalade ou de renvoi en agence, le motif, les prochaines "
         "étapes, les pièces éventuelles et le délai annoncé vous ont-ils semblé "
         "clairs et réalistes ?",
-        relevant="${escalade} = '1' or ${renvoi_canal} = '1' "
-                 "or ${renvoi_agence} = '1'")
+        relevant="${escalade} = '1' or ${renvoi} = '1' "
+                 "or ${renvoi} = '2' or ${renvoi} = '3'")
 critere("Q16",
         "Q16 Avant de clôturer l'appel, le conseiller a-t-il vérifié que la "
         "solution ou la suite du traitement était bien comprise et, en cas de "
@@ -764,7 +827,13 @@ critere("Q22",
         "Q22 La prise de congé du conseiller vous a-t-elle semblé courtoise, "
         "naturelle et professionnelle (remerciement ou souhait adapté), sans "
         "exigence artificielle de répétition de votre nom ?")
-notees("H", "Clôture de l'entretien", ["Q21", "Q22"])
+# Ajoute par le PDF v1.2. Il prend le numero Q23, qui revenait a la synthese
+# qualitative : celle-ci se decale en Q24 / Q25 / Q26 pour que les numeros
+# suivent l'ordre du questionnaire, comme partout ailleurs.
+critere("Q23",
+        "Q23 Le conseiller a-t-il informé le client qu'il recevra un sondage "
+        "de satisfaction afin de partager son avis ?")
+notees("H", "Clôture de l'entretien", ["Q21", "Q22", "Q23"])
 score("SCORE_H", "Score — Clôture de l'entretien", NOTATION["H"]["questions"])
 fin_groupe()
 
@@ -777,16 +846,15 @@ fin_groupe()
 # numerateur comme du denominateur -- meme mecanique que Q15 ou Q18.
 #
 # La section est declaree comme les huit autres (`notees`) : ses criteres
-# entrent donc dans SCORE_TOTAL au meme titre que Q1 a Q22. Un appel est ainsi
-# note sur 22 criteres de comportement PLUS les 3 a 5 actes que son scenario
+# entrent donc dans SCORE_TOTAL au meme titre que Q1 a Q23. Un appel est ainsi
+# note sur 23 criteres de comportement PLUS les 3 a 5 actes que son scenario
 # appelait.
 groupe("grp_i", "I. MAÎTRISE DU SCÉNARIO")
 q("note", "note_criteres_scenario",
   "Ces critères portent sur le **traitement technique du scénario que vous avez "
   "joué** : ce que le conseiller a effectivement vérifié, expliqué ou fait.\n\n"
-  "Seuls ceux du scénario coché en page « Scénario joué » s'affichent. Ils "
-  "prennent la **même échelle** que les sections A à H et comptent dans le "
-  "**même score**.")
+  "Seuls ceux du scénario coché en page « Scénario joué » s'affichent, et ils "
+  "se remplissent **comme les sections A à H**.")
 CRITERES_I = []
 for _code, _libelle_scenario in SCENARIOS:
     groupe(f"grp_{_code.lower()}", _libelle_scenario,
@@ -803,83 +871,49 @@ score("SCORE_I", "Score — Maîtrise du scénario", NOTATION["I"]["questions"])
 fin_groupe()
 
 # =====================================================================
-# PAGE 14 — ALERTES CRITIQUES
-# =====================================================================
-# Hors score, volontairement : une alerte critique doit remonter meme quand le
-# score global de l'appel reste eleve. C'est pour cela qu'elle est exportee a
-# part. Depuis que chaque 0 porte sa propre alerte, cette page ne ramasse plus
-# que le reliquat : les cas observes ailleurs que sur un critere note 0 (pendant
-# une mise en attente, sur un point non score...). Pas de double saisie.
-# Le commentaire reste OUVERT sous « Aucune alerte critique », mais facultatif :
-# la liste est fermee sur les cas nommes du document, et un manquement grave qui
-# n'y entre pas doit pouvoir etre decrit plutot que perdu faute de case. D'ou un
-# `required` porteur d'une expression -- obligatoire des qu'une alerte est
-# cochee, libre sinon -- au lieu du « yes » pose par defaut.
-groupe("grp_alertes", "Alertes critiques — à signaler obligatoirement")
-q("note", "note_alertes",
-  "**Principe.** Une alerte critique doit être **décrite factuellement**, même "
-  "si le score global de l'appel reste élevé. Elle fait l'objet d'une analyse "
-  "séparée et d'un commentaire obligatoire, et n'entre pas dans le calcul du "
-  "score.\n\n"
-  "Les alertes déjà cochées sur un critère **non conforme** sont remontées : "
-  "**ne les répétez pas ici.** Cette page ne recueille que les cas observés "
-  "**en dehors d'un critère non conforme**.")
-q("select_multiple alertes", "alertes",
-  "Autres cas d'alerte critique observés pendant cet appel",
-  hint="Hors de ceux déjà signalés sur un critère non conforme. Plusieurs cas "
-       "peuvent être cochés. Cocher « Aucune alerte critique » si aucun autre "
-       "ne s'est produit.",
-  constraint=CONTRAINTE_ALERTE, constraint_message=MSG_ALERTE)
-q("text", "alertes_com",
-  "Alerte critique — décrivez les faits observés, avec la formulation exacte "
-  "du conseiller.",
-  hint="Obligatoire dès qu'une alerte est cochée. Décrire ce qui s'est produit, "
-       "pas ce qui aurait dû se produire. Sous « Aucune alerte critique » le "
-       "champ reste ouvert mais facultatif : servez-vous-en pour un manquement "
-       "grave qui n'entre dans aucun des cas listés.",
-  required="not(selected(${alertes}, 'aucune'))",
-  relevant="${alertes} != ''",
-  appearance="multiline")
-fin_groupe()
-
-# =====================================================================
-# PAGE 15 — SYNTHESE QUALITATIVE
+# PAGE 14 — SYNTHESE QUALITATIVE
 # =====================================================================
 groupe("grp_synthese", "Synthèse qualitative")
-q("text", "Q23", "Q23 Quel est le principal point fort de cet appel ?",
+# Q24 a Q26 : anciennement Q23 a Q25, decalees par l'arrivee du critere Q23 en
+# section H. Voir le README, « Renumerotation de la synthese ».
+q("text", "Q24", "Q24 Quel est le principal point fort de cet appel ?",
   hint="Un fait précis, pas une appréciation générale.", appearance="multiline")
-q("text", "Q24",
-  "Q24 Quel est le principal irritant ou effort subi par le client ?",
+q("text", "Q25",
+  "Q25 Quel est le principal irritant ou effort subi par le client ?",
   hint="Ce qui a coûté du temps, une répétition ou une inquiétude au client.",
   appearance="multiline")
-q("select_one oui_non", "Q25",
-  "Q25 Le client devrait-il rappeler ou contacter un autre canal pour le même "
+q("select_one oui_non", "Q26",
+  "Q26 Le client devrait-il rappeler ou contacter un autre canal pour le même "
   "motif ?", appearance="horizontal-compact")
-q("text", "Q25_txt", "Q25 Pourquoi ?",
-  hint="Ce qui reste à faire, ou ce qui rend un nouveau contact inutile.",
-  appearance="multiline")
+# Le « pourquoi » ne se pose que sur un OUI : si le client n'a pas a rappeler,
+# il n'y a rien a expliquer. Sans cette condition le champ s'affichait toujours
+# et forcait une justification de l'absence de probleme.
+q("text", "Q26_txt", "Q26 Pourquoi ?",
+  hint="Ce qui reste à faire, et par quel canal le client devrait le faire.",
+  relevant="${Q26} = '1'", appearance="multiline")
 fin_groupe()
 
 # =====================================================================
-# PAGE 16 — SCORE DE L'APPEL
+# PAGE 15 — FIN DE L'EVALUATION
 # =====================================================================
 TOUTES_NOTEES = [n for s in NOTATION.values() for n in s["questions"]]
 
-groupe("grp_score", "Score de l'appel")
+groupe("grp_score", "Fin de l'évaluation")
 q("time", "heure_fin", "Heure fin",
   constraint="decimal-time(.) > decimal-time(${heure_debut})",
   constraint_message="L'heure de fin doit être postérieure à l'heure de début.")
-q("note", "note_score",
-  "Résultat de l'appel, calculé par le formulaire : rien à saisir. Le score "
-  "est la part des points obtenus sur les points réellement en jeu — un critère "
-  "**non applicable**, ou masqué parce que la situation ne s'est pas produite, "
-  "n'entre ni au numérateur ni au dénominateur.")
-score("SCORE_TOTAL", "Score total de l'appel", TOUTES_NOTEES,
-      hint="sur 100, toutes sections confondues", affiche=True)
+q("note", "note_fin",
+  "**C'est terminé.** Vérifiez les questions marquées en rouge, puis "
+  "enregistrez et envoyez le formulaire.")
+# AUCUN SCORE N'EST MONTRE A L'ENQUETEUR. SCORE_TOTAL reste un `calculate` :
+# il est calcule et exporte comme les scores de section, il ne s'affiche
+# simplement nulle part dans le questionnaire. Le chiffre se lit dans la base et
+# sur le tableau de bord, pas pendant la saisie -- un enqueteur qui voit son
+# total monter ou descendre ajuste la note suivante.
+score("SCORE_TOTAL", "Score total de l'appel", TOUTES_NOTEES)
 fin_groupe()
 
 
-# =====================================================================
 # OBLIGATOIRE PAR DEFAUT
 # =====================================================================
 for _l in survey:
@@ -919,8 +953,7 @@ NOMS_DEDUITS = {
     "duree_attentes": "T_ATTENTES",
     "nb_attentes": "NB_ATTENTES",
     "nb_transferts": "NB_TRANSFERTS",
-    "renvoi_canal": "RENVOI_CANAL",
-    "renvoi_agence": "RENVOI_AGENCE",
+    "renvoi": "RENVOI",
     "renvoi_precision": "RENVOI_PRECISION",
     "escalade": "ESCALADE",
 }
@@ -1042,8 +1075,7 @@ nb_questions = sum(1 for r in survey
                    and r.get("readonly") != "yes")
 nb_deduits = sum(1 for r in survey if r.get("readonly") == "yes")
 nb_texte = sum(1 for r in survey if r["type"] == "text" and r.get("readonly") != "yes")
-nb_com = sum(1 for r in survey
-             if r["name"].endswith("_com") and r["name"] != "alertes_com")
+nb_com = sum(1 for r in survey if r["name"].endswith("_com"))
 nb_alertes_q = sum(1 for r in survey if r["name"].endswith("_alerte"))
 nb_pages = sum(1 for r in survey
                if r["type"] == "begin_group" and r["appearance"] == "field-list")
@@ -1053,9 +1085,15 @@ print(f"  {nb_questions} questions saisies, {nb_deduits} champs déduits, "
 print(f"  {len(TOUTES_NOTEES)} critères notés répartis en {len(NOTATION)} "
       f"sections, {nb_alertes_q} qualifications d'alerte puis {nb_com} "
       f"commentaires, conditionnés à un critère non conforme")
-nb_cas = {n: sum(1 for c in choices if c["list_name"] == n) - 1
-          for n in ("alertes", "alertes_a")}
-print(f"  {nb_cas['alertes']} cas d'alerte critique généraux et "
-      f"{nb_cas['alertes_a']} propres à la section A (accessibilité & serveur "
-      f"vocal), hors score, cochables sur chaque non-conformité ; la page "
-      f"dédiée ne recueille que ceux qu'aucune non-conformité ne porte")
+# Les listes des criteres ne portent que des cas : rien a retrancher. Elles ne
+# proposent pas toutes les memes : la section A remplace les cinq cas generaux
+# par les siens, C et D les completent, critere par critere pour D.
+LISTES_ALERTE = ("alertes_nc", "alertes_a", "alertes_c",
+                 "alertes_q9", "alertes_q10", "alertes_q11")
+nb_cas = {n: sum(1 for c in choices if c["list_name"] == n)
+          for n in LISTES_ALERTE}
+print(f"  {len(CAS_ALERTES)} cas d'alerte critique généraux, hors score, "
+      f"cochables sur chaque non-conformité et là seulement")
+print("  " + " · ".join(f"{n} : {nb}" for n, nb in nb_cas.items())
+      + f" — {sum(1 for c in choices if c['list_name'] in LISTES_ALERTE)} "
+        f"modalités pour {len(LISTES_ALERTE)} listes")

@@ -125,8 +125,8 @@ toutes les 30 s.
 
 Elle est **essentielle** et se trompe facilement. Reproduis-la exactement.
 
-Les critères notés utilisent tous la même liste `conformite`. Il y en a **128** :
-les 22 critères de comportement `Q1` … `Q22`, posés à chaque appel, et les 106
+Les critères notés utilisent tous la même liste `conformite`. Il y en a **129** :
+les 23 critères de comportement `Q1` … `Q23`, posés à chaque appel, et les 106
 critères de scénario `S01_1` … `S25_5`, dont **seuls ceux du scénario joué sont
 posés** — 3 à 5 par appel, les autres étant masqués. Ne déduis pas la liste de
 leur nom : prends tout critère dont la question tire sa liste de `conformite`.
@@ -148,7 +148,7 @@ Trois pièges, tous du même côté :
   par la logique conditionnelle (`Q15` sans escalade ni renvoi, `Q18` sans mise en
   attente ni transfert, et surtout **les 101 critères des scénarios non joués**,
   absents de toute soumission) : elle sort des deux sommes. C'est le cas le plus
-  fréquent, pas un cas limite — un appel porte 25 à 27 critères sur 128.
+  fréquent, pas un cas limite — un appel porte 26 à 28 critères sur 129.
 - **`na` n'est pas un zéro non plus** — sa colonne `points` est vide.
 - **Dénominateur nul → pas de score**, affiche « — ». Jamais 0, jamais une
   division par zéro.
@@ -188,40 +188,47 @@ Variables exportées (nom = dernier segment de la clé de soumission) :
 | `T_DUREE_APPEL` | durée de l'appel, **en secondes** |
 | `TEMPS_TOTAL` | la même durée **en minutes**, déduite — seule valeur du questionnaire qui ne soit pas en secondes, conservée pour empiler la collecte avec le JOB 001/26 |
 | `NB_ATTENTES`, `NB_TRANSFERTS` | nombre de mises en attente et de transferts |
-| `RENVOI_CANAL`, `RENVOI_AGENCE`, `ESCALADE` | `1` = Oui, `2` = Non. Les trois ne sont posés que si `NB_TRANSFERTS > 0` : absents sinon, ce qui n'est pas un « Non ». `RENVOI_CANAL` a porté « canal **ou** agence » jusqu'au 16/09/2026 — ne compare pas les deux périodes sur cette colonne |
+| `RENVOI`, `ESCALADE` | `RENVOI` : `0` = aucun renvoi, `1` = autre canal, `2` = agence, `3` = point de vente physique. `ESCALADE` : `1` = Oui, `2` = Non. Les deux ne sont posés que si `NB_TRANSFERTS > 0` : absents sinon, ce qui n'est ni un « Non » ni un `0`. Le renvoi a tenu auparavant dans `RENVOI_CANAL` et `RENVOI_AGENCE` (`1` = Oui, `2` = Non), et `RENVOI_CANAL` a même porté « canal **ou** agence » jusqu'au 16/09/2026 — ne compare pas ces périodes sur une même colonne |
 | `RENVOI_PRECISION` | texte libre, présent si l'un des deux renvois vaut Oui |
-| `Q1` … `Q22` | les 22 critères de comportement, posés à chaque appel |
+| `Q1` … `Q23` | les 23 critères de comportement, posés à chaque appel |
 | `S01_1` … `S25_5` | les 106 critères de scénario ; **seuls ceux du scénario joué sont renseignés**, les autres sont absents de la soumission |
-| `Q1_ALERTE` … `Q22_ALERTE`, `S01_1_ALERTE` … `S25_5_ALERTE` | choix multiple, présent **uniquement** si le critère vaut `0` : le ou les cas d'alerte critique que ce 0 révèle, ou `aucune` |
-| `Q1_COM` … `Q22_COM`, `S01_1_COM` … `S25_5_COM` | commentaire obligatoire, présent **uniquement** si le critère vaut `0` : le fait qui étaye le 0 et l'alerte ci-dessus |
-| `ALERTES` | choix multiple, **le reliquat seul** : les cas observés hors d'un critère noté `0`. Mêmes codes |
-| `ALERTES_COM` | description factuelle des cas cochés dans `ALERTES` |
+| `Q1_ALERTE` … `Q23_ALERTE`, `S01_1_ALERTE` … `S25_5_ALERTE` | choix multiple, présent **uniquement** si le critère vaut `0` : le ou les cas d'alerte critique que ce 0 révèle. **Au moins un cas est toujours coché** — la liste proposée sur un critère ne contient pas `aucune` |
+| `Q1_COM` … `Q23_COM`, `S01_1_COM` … `S25_5_COM` | commentaire obligatoire, présent **uniquement** si le critère vaut `0` : le fait qui étaye le 0 et l'alerte ci-dessus |
 
 **Codes d'alerte**, séparés par des espaces. Liste **générale**, proposée sur
-les critères des sections B à I et dans `ALERTES` : `confidentialite`,
-`info_erronee`, `irrespect`, `promesse`, `abandon`.
+les critères des sections B, E, F, G, H et I : `confidentialite`, `info_erronee`,
+`irrespect`, `promesse`, `abandon`.
 
-`Q1_ALERTE`, `Q2_ALERTE` et `Q3_ALERTE` — **A. Accessibilité & serveur vocal** —
-portent une **autre liste**, et sont les seuls champs où ces codes apparaissent :
-`accueil_incoherent`, `menus_errones`, `langue_indisponible`, `boucle_ivr`,
-`coupure_redirection`, `attente_non_signalee`. La section se joue avant toute
-prise de ligne : les cas généraux sont des faits du conseiller et n'y sont pas
-observables.
+Quatre champs ou groupes de champs portent, en plus ou à la place, des codes qui
+n'apparaissent **que** là :
 
-Les deux listes partagent `autre` — une alerte réelle qui n'entre dans aucun des
-cas nommés, qualifiée par le commentaire du critère — et `aucune`. **Ne suppose
-pas quelle liste porte un champ** : lis les codes tels qu'ils arrivent, tous
-sont des cas d'alerte sauf `aucune`.
+| Champs | Codes propres | Les cas généraux y sont |
+|---|---|---|
+| `Q1_ALERTE`, `Q2_ALERTE`, `Q3_ALERTE` — **A.** Accessibilité & serveur vocal | `accueil_incoherent`, `menus_errones`, `langue_indisponible`, `boucle_ivr`, `coupure_redirection`, `attente_non_signalee` | **non** — remplacés |
+| `Q6_ALERTE`, `Q7_ALERTE`, `Q8_ALERTE` — **C.** Compréhension du besoin | `interruption`, `sans_ecoute`, `questions_hors_sujet`, `sans_reformulation`, `besoin_mal_compris`, `demande_ignoree` | oui, en plus |
+| `Q9_ALERTE` — maîtrise des offres et procédures | `offre_fausse`, `procedure_mal_expliquee`, `promesse_irrealiste` | oui, en plus |
+| `Q10_ALERTE` — exactitude et cohérence | `reponse_contradictoire`, `erreur_manifeste`, `engagement_trompeur` | oui, en plus |
+| `Q11_ALERTE` — pédagogie et clarté | `explication_confuse`, `sans_etapes`, `jargon` | oui, en plus |
+
+La section A est la seule où les cas généraux sont **remplacés** : elle se joue
+avant toute prise de ligne, les cas généraux sont des faits du conseiller et n'y
+sont pas observables. Partout ailleurs ils le sont, et les codes propres viennent
+s'y ajouter.
+
+Aucune liste ne porte plus `aucune` : un `0` nomme toujours un cas. Deux codes
+traînent dans d'anciennes soumissions et ne sont plus produits — `autre`,
+modalité retirée le 18/09/2026, et `aucune`, qui ne servait qu'à la page
+« Alertes critiques » supprimée le 22/09/2026 avec ses deux variables, `ALERTES`
+et `ALERTES_COM`. **Ne suppose pas quelle liste porte un champ** : lis les codes
+tels qu'ils arrivent, tous sont des cas d'alerte sauf `aucune` et `autre`.
 
 > **Les alertes d'un appel se lisent dans tous les champs `*_ALERTE`, pas un.**
-> Union de chaque `<critère>_ALERTE` — `Q1` à `Q22` comme `S01_1` à `S25_5` — et
-> de `ALERTES`, `aucune` écartée, **dédoublonnée** : le même cas coché sur deux
-> critères reste une alerte pour l'appel. Ne compte pas `ALERTES` seul — la
-> plupart des alertes sont rattachées au critère qui les révèle. Repère ces
-> champs par leur suffixe `_ALERTE`, jamais par une liste écrite en dur.
-> `alertes_de()` dans `build_dashboard.py` fait exactement cela.
-| `Q23`, `Q24` | point fort / principal irritant (texte libre) |
-| `Q25`, `Q25_TXT` | le client doit-il rappeler ? (`1`/`2`) et pourquoi |
+> Union de chaque `<critère>_ALERTE` — `Q1` à `Q23` comme `S01_1` à `S25_5` —,
+> **dédoublonnée** : le même cas coché sur deux critères reste une alerte pour
+> l'appel. Repère ces champs par leur suffixe `_ALERTE`, jamais par une liste
+> écrite en dur. `alertes_de()` dans `build_dashboard.py` fait exactement cela.
+| `Q24`, `Q25` | point fort / principal irritant (texte libre) |
+| `Q26`, `Q26_TXT` | le client doit-il rappeler ? (`1`/`2`) et pourquoi |
 | `SCORE_A` … `SCORE_I`, `SCORE_TOTAL` | scores calculés par le formulaire — **recalcule-les toi-même** plutôt que de les lire, pour rester juste si un formulaire ancien est soumis |
 
 ---
@@ -239,9 +246,8 @@ discret « mis à jour il y a N s ». De haut en bas :
 3. **Alertes critiques — le panneau le plus important.** Liste des appels portant
    au moins une alerte, le plus récent en tête : date/heure, enquêteur, opérateur,
    scénario, puis **une ligne par alerte** — le cas coché, le critère qui l'a
-   révélée (`Q14`, `Q20`…) ou « hors critère noté » pour celles de `ALERTES`, et
-   le commentaire qui l'étaye en entier (`Q<n>_COM`, ou `ALERTES_COM` pour le
-   reliquat). C'est ce qu'un responsable terrain doit voir sans cliquer.
+   révélée (`Q14`, `Q20`…) et le commentaire qui l'étaye en entier (`Q<n>_COM`).
+   C'est ce qu'un responsable terrain doit voir sans cliquer.
 4. **Volume par jour** — barres, depuis le premier appel.
 5. **Orange vs MTN** — volume et score moyen côte à côte.
 6. **Par enquêteur** — nombre d'appels aujourd'hui et au total, score moyen.
