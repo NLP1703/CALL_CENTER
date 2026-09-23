@@ -121,6 +121,51 @@
       "media::image": ""
     },
     {
+      "type": "select_one region",
+      "name": "region",
+      "label": "Région administrative",
+      "hint": "Là où vous vous trouvez pendant l'appel.",
+      "required": "yes",
+      "relevant": "",
+      "constraint": "",
+      "constraint_message": "",
+      "appearance": "",
+      "calculation": "",
+      "choice_filter": "",
+      "readonly": "",
+      "media::image": ""
+    },
+    {
+      "type": "select_one departement",
+      "name": "departement",
+      "label": "Département",
+      "hint": "Seuls les départements de la région cochée s'affichent.",
+      "required": "yes",
+      "relevant": "",
+      "constraint": "",
+      "constraint_message": "",
+      "appearance": "",
+      "calculation": "",
+      "choice_filter": "region=${region}",
+      "readonly": "",
+      "media::image": ""
+    },
+    {
+      "type": "select_one ville",
+      "name": "ville",
+      "label": "Ville",
+      "hint": "Seules les villes du département coché s'affichent.",
+      "required": "yes",
+      "relevant": "",
+      "constraint": "",
+      "constraint_message": "",
+      "appearance": "",
+      "calculation": "",
+      "choice_filter": "departement=${departement}",
+      "readonly": "",
+      "media::image": ""
+    },
+    {
       "type": "select_one reseau",
       "name": "reseau",
       "label": "Opérateur",
@@ -7695,6 +7740,181 @@
       "points": ""
     },
     {
+      "list_name": "region",
+      "name": "adamaoua",
+      "label": "ADAMAOUA",
+      "points": ""
+    },
+    {
+      "list_name": "region",
+      "name": "centre",
+      "label": "CENTRE",
+      "points": ""
+    },
+    {
+      "list_name": "region",
+      "name": "extreme_nord",
+      "label": "EXTREME-NORD",
+      "points": ""
+    },
+    {
+      "list_name": "region",
+      "name": "nord_ouest",
+      "label": "NORD-OUEST",
+      "points": ""
+    },
+    {
+      "list_name": "region",
+      "name": "ouest",
+      "label": "OUEST",
+      "points": ""
+    },
+    {
+      "list_name": "region",
+      "name": "sud",
+      "label": "SUD",
+      "points": ""
+    },
+    {
+      "list_name": "region",
+      "name": "sud_ouest",
+      "label": "SUD-OUEST",
+      "points": ""
+    },
+    {
+      "list_name": "departement",
+      "name": "vina",
+      "label": "VINA",
+      "points": "",
+      "region": "adamaoua"
+    },
+    {
+      "list_name": "departement",
+      "name": "mfoudi",
+      "label": "MFOUDI",
+      "points": "",
+      "region": "centre"
+    },
+    {
+      "list_name": "departement",
+      "name": "diamare",
+      "label": "DIAMARE",
+      "points": "",
+      "region": "extreme_nord"
+    },
+    {
+      "list_name": "departement",
+      "name": "logone_et_chari",
+      "label": "LOGONE ET CHARI",
+      "points": "",
+      "region": "extreme_nord"
+    },
+    {
+      "list_name": "departement",
+      "name": "mezam",
+      "label": "MEZAM",
+      "points": "",
+      "region": "nord_ouest"
+    },
+    {
+      "list_name": "departement",
+      "name": "bamboutos",
+      "label": "BAMBOUTOS",
+      "points": "",
+      "region": "ouest"
+    },
+    {
+      "list_name": "departement",
+      "name": "ocean",
+      "label": "OCEAN",
+      "points": "",
+      "region": "sud"
+    },
+    {
+      "list_name": "departement",
+      "name": "fako",
+      "label": "FAKO",
+      "points": "",
+      "region": "sud_ouest"
+    },
+    {
+      "list_name": "departement",
+      "name": "meme",
+      "label": "MEME",
+      "points": "",
+      "region": "sud_ouest"
+    },
+    {
+      "list_name": "ville",
+      "name": "ngaoundere",
+      "label": "NGAOUNDERE",
+      "points": "",
+      "departement": "vina"
+    },
+    {
+      "list_name": "ville",
+      "name": "yaounde",
+      "label": "YAOUNDÉ",
+      "points": "",
+      "departement": "mfoudi"
+    },
+    {
+      "list_name": "ville",
+      "name": "maroua",
+      "label": "MAROUA",
+      "points": "",
+      "departement": "diamare"
+    },
+    {
+      "list_name": "ville",
+      "name": "kousseri",
+      "label": "KOUSSERI",
+      "points": "",
+      "departement": "logone_et_chari"
+    },
+    {
+      "list_name": "ville",
+      "name": "bamenda",
+      "label": "BAMENDA",
+      "points": "",
+      "departement": "mezam"
+    },
+    {
+      "list_name": "ville",
+      "name": "mbouda",
+      "label": "MBOUDA",
+      "points": "",
+      "departement": "bamboutos"
+    },
+    {
+      "list_name": "ville",
+      "name": "kribi",
+      "label": "KRIBI",
+      "points": "",
+      "departement": "ocean"
+    },
+    {
+      "list_name": "ville",
+      "name": "limbe",
+      "label": "LIMBE",
+      "points": "",
+      "departement": "fako"
+    },
+    {
+      "list_name": "ville",
+      "name": "tiko",
+      "label": "TIKO",
+      "points": "",
+      "departement": "fako"
+    },
+    {
+      "list_name": "ville",
+      "name": "kumba",
+      "label": "KUMBA",
+      "points": "",
+      "departement": "meme"
+    },
+    {
       "list_name": "type_interview",
       "name": "test",
       "label": "TEST - Interview non valide",
@@ -8578,6 +8798,9 @@
     "nom_enqueteur": "NOM_ENQ",
     "date_evaluation": "DATE_INTERVIEW",
     "reseau": "OPERATEUR",
+    "region": "REGION_ADMINISTRATIVE",
+    "departement": "DEPARTEMENT",
+    "ville": "VILLE",
     "scenario_joue": "SCENARIO",
     "type_interview": "TYPE_INTERVIEW",
     "heure_debut": "HEURE_DEBUT",
@@ -8588,15 +8811,18 @@
   },
   "noms_mds": [
     "date_evaluation",
+    "departement",
     "heure_debut",
     "heure_fin",
     "jour_semaine",
     "langue_enqueteur",
     "nom_enqueteur",
+    "region",
     "reseau",
     "scenario_joue",
     "temps_total",
-    "type_interview"
+    "type_interview",
+    "ville"
   ],
   "bareme": {
     "conformite": {

@@ -22,6 +22,7 @@ Vocabulaire retenu : « enqueteur » -> auditor, « conseiller » -> adviser,
 sont deja dans le questionnaire francais).
 """
 import criteres_scenario
+import localites
 
 # Libelles, consignes et messages de controle du questionnaire.
 FR_EN = {
@@ -110,6 +111,15 @@ FR_EN = {
     "L'heure de fin doit être postérieure à l'heure de début.":
         'The end time must be later than the start time.',
     'Langue': 'Language',
+    'Région administrative': 'Administrative region',
+    "Là où vous vous trouvez pendant l'appel.":
+        'Where you are during the call.',
+    'Département': 'Division',
+    "Seuls les départements de la région cochée s'affichent.":
+        'Only the divisions of the region ticked are shown.',
+    'Ville': 'Town',
+    "Seules les villes du département coché s'affichent.":
+        'Only the towns of the division ticked are shown.',
     'Scénario': 'Scenario',
     'Identification conseiller': 'Adviser identification',
     "Nom donné par le conseiller, ou matricule s'il en a communiqué un":
@@ -625,6 +635,12 @@ FR_EN = {
 # qu'eclatee sur deux fichiers. Ils rejoignent la table generale pour que `en()`
 # et le controle de couverture de build_form.py les voient comme les autres.
 FR_EN.update(criteres_scenario.traductions())
+
+# Regions, departements et villes sont des NOMS PROPRES : ils s'ecrivent de la
+# meme facon dans les deux langues, comme ORANGE et MTN plus haut. Ils sont
+# repris de localites.py plutot que recopies ici, pour que la table suive
+# d'elle-meme quand MDS completera le referentiel.
+FR_EN.update({libelle: libelle for libelle in localites.LIBELLES})
 
 # Textes de l'interface du guide enqueteur et du tableau de bord (hors
 # questionnaire).

@@ -272,6 +272,7 @@ python kobo.py media aMrWStmZLSCTA4yuaBZhxF     # contrôle du logo attaché
 | `theme.py` | Identité visuelle MDS (couleurs du logo, bandeau, logo embarqué) |
 | `logo_mds_blanc.txt` / `logo_mds_couleur.txt` | Logo MDS en data URI |
 | `build_guide.py` | Génère `guide_enqueteur.html` (questionnaire remplissable, bouton FR / EN ; scores calculés en arrière-plan, jamais affichés) |
+| `localites.py` | Référentiel géographique — régions, départements, villes du fichier des agences MDS. **Liste partielle, à compléter** |
 | `build_correspondance.py` | Génère `correspondance_variables.xlsx` (noms de variables à valider) |
 | `correspondance_variables.xlsx` | Nom exporté de chaque question ; lignes jaunes = nom déduit, à valider par MDS |
 | `build_dashboard.py` | Génère `suivi_collecte.html` depuis l'API Kobo |
@@ -313,7 +314,7 @@ soumission, il produit un jeu de **démonstration** signalé en clair sur la pag
 | Page | Contenu | Noté |
 |---|---|---|
 | 1 | Consignes : **1.** principes d'utilisation · **2.** repères pour le calibrage · **3.** dans ce formulaire — puis type d'interview | — |
-| 2 | Identification de l'enquêteur (nom, opérateur, date, horaires, langue, conseiller) — jour de la semaine et **tranche horaire déduits** | — |
+| 2 | Identification de l'enquêteur (nom, **région / département / ville**, opérateur, date, horaires, langue, conseiller) — jour de la semaine et **tranche horaire déduits** | — |
 | 3 | **Mesures** : attente avant conseiller, durée de l'appel, mises en attente, transferts, puis — *sur transfert seulement* — renvoi, escalade | — |
 | 4 | **Scénario joué** — `S01` à `S25` | — |
 | 5 | **A.** Accessibilité & serveur vocal — Q1 à Q3 | 3 |
@@ -765,6 +766,42 @@ d'appels portant au moins une alerte, et répartition par cas. `alertes_de()`
 dans `build_dashboard.py` relit tous les `Q<n>_ALERTE`, quelle que soit la liste
 dont le cas provient, et dédoublonne : le même cas signalé sur deux critères
 reste une alerte pour l'appel.
+
+## Où se trouve l'enquêteur : trois listes emboîtées
+
+La page 2 situe **l'enquêteur pendant l'appel** — pas le client joué, pas une
+agence : ce questionnaire n'en visite aucune. Trois questions, chacune filtrée
+par la précédente :
+
+| Question | Liste | Ne montre que |
+|---|---|---|
+| `REGION_ADMINISTRATIVE` | `region` | les régions du référentiel |
+| `DEPARTEMENT` | `departement` | les départements de la région cochée (`choice_filter` `region=${REGION_ADMINISTRATIVE}`) |
+| `VILLE` | `ville` | les villes du département coché (`choice_filter` `departement=${DEPARTEMENT}`) |
+
+Un choix incohérent — une ville hors de son département — est donc impossible à
+cocher, et la ville suffit à retrouver les deux niveaux au-dessus à l'analyse.
+Le rattachement voyage dans deux colonnes ajoutées à la feuille `choices`,
+`region` et `departement`, lues par le `choice_filter` de KoboCollect comme par
+le JavaScript du guide (la mécanique de cascade, héritée du JOB 001/26, ne
+servait jusqu'ici à aucune liste).
+
+**Le référentiel est dans `localites.py`**, repris du fichier des agences MDS
+(colonnes `REGION_ADMINISTRATIVE`, `VILLE`, `DEPPARTEMENT` — la faute de frappe
+de l'en-tête n'est pas reprise) pour que les deux collectes se croisent sans
+table de passage.
+
+> ⚠️ **La liste est partielle et attend d'être complétée par MDS.** Elle a été
+> relevée sur des captures du fichier agences, triées par ville et coupées avant
+> `KOUSSERI` : tout ce qui précède alphabétiquement manque, **`DOUALA` et
+> `GAROUA` en tête**. État actuel : 7 régions, 9 départements, 10 villes.
+> Compléter les trois listes de `localites.py`, puis `python build_form.py` —
+> rien d'autre n'est à toucher, les traductions suivent (ce sont des noms
+> propres, identiques dans les deux langues).
+
+L'orthographe est celle du fichier MDS, **`MFOUDI` compris** alors que
+l'orthographe officielle est `MFOUNDI` : les deux collectes doivent exporter la
+même chaîne. À trancher avec MDS.
 
 ## Questions conditionnelles
 

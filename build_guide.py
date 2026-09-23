@@ -210,7 +210,9 @@ def code(nom):
 # "Posee si ...".
 ALIAS = {"escalade": "Escalade", "renvoi": "Renvoi",
          "nb_attentes": "Mises en attente", "nb_transferts": "Transferts",
-         "scenario_joue": "Scénario"}
+         "scenario_joue": "Scénario",
+         "region": "Région administrative", "departement": "Département",
+         "ville": "Ville"}
 
 
 def court(nom):
@@ -451,7 +453,7 @@ def rendre_question(ligne):
                  f'Valeur déduite : {calc}</p>')
     elif mods:
         multi = "true" if t.startswith("select_multiple") else "false"
-        # Cascade generique (aucun choice_filter sur ce questionnaire).
+        # Cascade generique : region -> departement -> ville (page 2).
         filtres = filtres_de(ligne.get("choice_filter", "") or "")
         attr_f = ""
         if filtres:
@@ -1183,8 +1185,8 @@ function calcule(nom) {
   return '—';
 }
 
-// Cascade generique heritee du JOB 001/26 : sans choice_filter, elle ne
-// s'applique a aucune liste de ce questionnaire.
+// Cascade generique heritee du JOB 001/26 : elle sert ici aux trois listes
+// emboitees de la page 2, region -> departement -> ville.
 function majFiltres() {
   document.querySelectorAll('.choix-liste[data-filtre]').forEach(l => {
     const champs = JSON.parse(l.dataset.filtre);
